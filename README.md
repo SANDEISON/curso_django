@@ -1,165 +1,156 @@
 # 📘Curso de Django (Python)
 
-## 🔹 Aula 4 – Templates no Django
+## 🔹 Aula 5 – Models e Banco de Dados no Django (ORM)
 
-### 1. Criando a Pasta de Templates
+### 1. ORM (Object-Relational Mapping)
 
-Dentro do app blog/, crie a pasta templates/ e dentro dela um arquivo home.html:
+O ORM (Object-Relational Mapping) do Django permite manipular bancos de dados usando código Python, sem precisar escrever SQL diretamente.
 
-    blog/
-    ├── templates/
-    │   └── home.html
-    ├── views.py
-    ├── urls.py
-    ...
+1.1 Configuração do Banco de Dados
 
-Exemplo home.html
+Por padrão, o Django usa SQLite (leve e já embutido no projeto).
+No arquivo settings.py você verá algo assim:
 
-    <!DOCTYPE html>
-    <html lang="pt-br">
-    <head>
-        <meta charset="UTF-8">
-        <title>Blog - Página Inicial</title>
-    </head>
-    <body>
-        <h1>Bem-vindo ao Blog!</h1>
-        <p>Este é o meu primeiro template no Django 🎉</p>
-    </body>
-    </html>
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+É possível trocar para PostgreSQL, MySQL ou outros bancos apenas alterando essas configurações.
 
 
+### 2. Criando as Migrações
 
-### 2. Alterando a View para Usar Templates
-
-No arquivo blog/views.py:
-
-    from django.shortcuts import render
-    
-    def home(request):
-        return render(request, 'home.html')
-
-
-
-### 3. Instalando o Bootstrap 5 no django
-
-3.1 Ative o ambiente virtual:
-
-    venv\Scripts\activate
-
-3.2 Uma vez dentro do ambiente virtual, instale o Bootstrap 5 com este comando:
-
-    pip install django-bootstrap-v5
-
-3.3 Atualizar configurações
-
-O próximo passo é incluir o módulo bootstrap na INSTALLED_APPSlista em settings.py:
-
-    INSTALLED_APPS = [
-        'django.contrib.admin',
-        'django.contrib.auth',
-        'django.contrib.contenttypes',
-        'django.contrib.sessions',
-        'django.contrib.messages',
-        'django.contrib.staticfiles',
-        'blog',  # app criado
-        'bootstrap5', #Bootstrap 5
-    ]
-
-3.4 Adicionar Bootstrap 5 ao modelo
-
-Dentro da pasta template crie um arquivo HTML base.html
-e adicione o Bootstrap
-    
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>{% block title %}{% endblock %}</title>
-      {% load bootstrap5 %}
-      {% bootstrap_css %}
-      {% bootstrap_javascript %}
-    </head>
-    <body>
-    
-    <div class="container">
-      <ul class="nav bg-info">
-        <li class="nav-item">
-          <a class="nav-link link-light" href="/">HOME</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link link-light" href="/members">MEMBERS</a>
-        </li>
-      </ul>
-    
-      {% block content %}
-      {% endblock %}
-    </div>
-    </body>
-    </html>
-
-Como você pode ver, inserimos essas três linhas na seção <head> :
-
-    {% load bootstrap5 %}
-    {% bootstrap_css %}
-    {% bootstrap_javascript %}
-
-A primeira linha informa ao Django que ele deve carregar o módulo Bootstrap 5 neste modelo.
-
-A segunda linha insere o
-
-    <link> 
-
-elemento com a referência à folha de estilo do bootstrap.
-
-A terceira linha insere o 
-
-    <script> 
-
-elemento com a referência ao arquivo javascript necessário.
-
-Pronto! O Bootstrap 5 agora faz parte do seu projeto!
-
-Podemos acessar os modelos do Bootstrap em 
-
-Link : https://getbootstrap.com/
-
-
-3.5 Alterando o home.html
-
-Vamos fazer uma alteração no arquivo home.html
-incluindo os dados do arquivo base.html
-
-    {% extends "base.html" %}
-    
-    
-    {% block content %}
-    
-        <h2>Bem-vindo , inciando com Django</h2>
-    
-    {% endblock %}
-
-
-### 4. Exemplo utilizando o Bootstrap
-
-No arquivo home.html adicione o seguinte código.
-
-
-    {% extends "base.html" %}
-    {% block content %}
-        <div class="container-fluid">
-            <div class="mb-3">
-                <label for="exampleFormControlInput1" class="form-label">Email address</label>
-                <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="name@example.com">
-            </div>
-            <div class="mb-3">
-                <label for="exampleFormControlTextarea1" class="form-label">Example textarea</label>
-                <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
-            </div>
-        </div>
-    {% endblock %}
-
-
-Para finalizar esta aula, como adicionamos do Django no projeto, vamos incluir as dependências no arquivo requirements.txt
+2.1 Criar a migração
 
 No terminal digite :
 
-    pip freeze > requirements.txt
+    python manage.py makemigrations
+
+Saída esperada:
+
+Migrations for 'blog':
+  blog/migrations/0001_initial.py
+
+2.2 Aplicar no banco de dados:
+
+No terminal digite :
+
+    python manage.py migrate
+
+
+### 3.Criando um Model (Tabela)
+
+Dentro do app blog, edite o arquivo models.py:
+    
+    from django.db import models
+    
+    class Post(models.Model):
+        titulo = models.CharField(max_length=200)
+        conteudo = models.TextField()
+        data_criacao = models.DateTimeField(auto_now_add=True)
+    
+        def __str__(self):
+            return self.titulo
+
+Explicação dos campos:
+
+CharField → Texto curto, com limite de caracteres.
+
+TextField → Texto longo (sem limite específico).
+
+DateTimeField → Data e hora; auto_now_add=True insere automaticamente a data de criação.
+
+__str__ → Define como o objeto será exibido no painel admin ou no shell.
+
+
+Depois de criar/alterar models, precisamos gerar as migrações (instruções para criar tabelas no banco).
+
+No terminal digite :
+
+    python manage.py makemigrations
+
+No terminal digite :
+
+    python manage.py migrate
+
+
+### 4. Django Admin
+
+Django Admin é uma ferramenta realmente ótima no Django, na verdade é uma interface de usuário CRUD* de todos os seus modelos!
+
+É gratuito e vem pronto para uso com Django:
+
+1.1 Iniciando com o Django Admin
+
+Para entrar na interface do usuário do administrador, inicie o servidor navegando
+
+No terminal digite :
+
+    python manage.py runserver
+
+Na janela do navegador, digite 127.0.0.1:8000/admin/na barra de endereço.
+
+Ao acessar você vera uma tela de login.
+
+
+O motivo pelo qual esta URL leva à página de login do administrador do Django pode ser encontrado no urls.py arquivo do seu projeto:
+
+
+    from django.contrib import admin
+    from django.urls import path, include
+    
+    urlpatterns = [
+        path('admin/', admin.site.urls),
+        path('blog/', include('blog.urls')),  # rota do app blog
+    ]
+
+
+
+1.2  Criar Usuário no Django Admin 
+
+Para poder efetuar login no aplicativo de administração, precisamos criar um usuário.
+
+Isso é feito digitando este comando na visualização de comandos:
+
+terminal digite :
+
+    python manage.py createsuperuser
+
+O que dará este prompt:
+
+Aqui você deve digitar:
+
+    nome de usuário 
+    endereço de e-mail (você pode escolher um endereço de e-mail falso) 
+    senha:
+
+    Username: sandeison
+    Email address: sandeisonfernandes@gmail.com
+    Password: 123456789
+    Password (again): 123456789
+    Esta senha é muito curta. Ela deve conter pelo menos 8 caracteres.
+    Esta senha é muito comum.
+    Esta senha é totalmente numérica.
+    Ignorar a validação de senha e criar usuário mesmo assim? [s/N]:
+
+Minha senha não atendeu aos critérios, mas este é um ambiente de teste e escolhi criar um usuário mesmo assim, digitando y:
+    
+    Bypass password validation and create user anyway? [y/N]: y
+
+Se você pressionar [Enter], deverá ter criado um usuário com sucesso:
+
+    Superuser created successfully.
+
+Agora inicie o servidor novamente:
+
+No terminal digite :
+
+    python manage.py runserver
+
+Na janela do navegador, digite 127.0.0.1:8000/admin/na barra de endereço.
+
+Agora é preencha o formulário com o nome de usuário e senha corretos para acessar o sisitema.
+
+
