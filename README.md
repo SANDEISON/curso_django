@@ -95,9 +95,9 @@ O View retorna uma resposta renderizada com o Template.
 
 | Aula	                                             | Branch |                                                Clique no Link |
 |:--------------------------------------------------|:------:|--------------------------------------------------------------:|
-| Aula 1 – O que é Django?                          | aula_1 | [Link](https://github.com/SANDEISON/curso_django)  |
+| Aula 1 – O que é Django?                          | aula_1 |             [Link](https://github.com/SANDEISON/curso_django) |
 | Aula 2 - Configuração do Ambiente Django          | aula_2 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_2) |
 | Aula 3 - Criação e Estrutura do Projeto em Django | aula_3 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_3) |
-| Aula 4                                            |        |                                                               |
-| Aula 5                                            |        |                                                               |
+| Aula 4 - Templates no Django                      | aula_4 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_4) |
+| Aula 5 - Models e Banco de Dados no Django (ORM)  | aula_5 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_5) |
 
