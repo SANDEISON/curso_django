@@ -1,233 +1,227 @@
 # 📘Curso de Django (Python)
 
-## 🔹 Aula 5 – Models e Banco de Dados no Django (ORM)
+## 🔹 Aula 6 – Exibindo dados do Models no Template
 
-### 1. ORM (Object-Relational Mapping)
+### 1. Variáveis 
 
-O ORM (Object-Relational Mapping) do Django permite manipular bancos de dados usando código Python, sem precisar escrever SQL diretamente.
+Em modelos Django, você pode renderizar variáveis
+colocando-as entre {{ }} colchetes:
 
-1.1 Configuração do Banco de Dados
+Exemplo: 
 
-Por padrão, o Django usa SQLite (leve e já embutido no projeto).
-No arquivo settings.py você verá algo assim:
+    <h1>Hello {{ firstname }}, how are you?</h1>
 
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-É possível trocar para PostgreSQL, MySQL ou outros bancos apenas alterando essas configurações.
+A variável firstname foi criado na view, vamos ver mais a diante essa implementação.
 
 
-### 2. Criando as Migrações
+### 2. Criar variáveis
 
-2.1 Criar a migração
+A variável firstname no exemplo acima foi enviada ao modelo por meio de uma visualização:
 
-No terminal digite :
+    views.py:
+        from django.http import HttpResponse
+        from django.template import loader
+        
+        def testing(request):
+          template = loader.get_template('template.html')
+          context = {
+            'firstname': 'Linus',
+          }
+          return HttpResponse(template.render(context, request))
 
-    python manage.py makemigrations
 
-Saída esperada:
+Como você pode ver na visão acima, criamos um objeto chamado context, 
+o preenchemos com dados e o enviamos como o primeiro parâmetro na template.render() da função.
 
-Migrations for 'blog':
-  blog/migrations/0001_initial.py
 
-2.2 Aplicar no banco de dados:
 
-No terminal digite :
+### 3.Obtendo Dados de um modelo
 
-    python manage.py migrate
+O exemplo acima mostrou uma abordagem fácil sobre como criar e usar variáveis em um modelo.
 
+Normalmente, a maioria dos dados externos que você deseja usar vem de um modelo.
 
-### 3.Criando um Model (Tabela)
+Na aula 5 criamos um modelo chamado Post.
+Para obter dados do modelo, teremos que importá-los no arquivo views.py e extrair os dados dele na visualização:
 
-Dentro do app blog, edite o arquivo models.py:
-    
-    from django.db import models
-    
-    class Post(models.Model):
-        titulo = models.CharField(max_length=200)
-        conteudo = models.TextField()
-        data_criacao = models.DateTimeField(auto_now_add=True)
-    
-        def __str__(self):
-            return self.titulo
+    views.py
+    from django.http import HttpResponse, HttpResponseRedirect
+    from django.template import loader
+    from .models import Member
 
-Explicação dos campos:
+    def testing(request):
+      posts = Post.objects.all().values()
+      template = loader.get_template('home.html')
+      context = {
+        'posts': posts,
+      }
+      return HttpResponse(template.render(context, request))
 
-CharField → Texto curto, com limite de caracteres.
+Agora podemos usar os dados do modelo na pagina home.html:
 
-TextField → Texto longo (sem limite específico).
 
-DateTimeField → Data e hora; auto_now_add=True insere automaticamente a data de criação.
+    templates/home.html:
 
-__str__ → Define como o objeto será exibido no painel admin ou no shell.
+    {% extends "base.html" %}
+    {% block content %}     
+      <ul>
+        {% for i in posts %}
+          <li>{{ i.titulo }}</li>
+        {% endfor %}
+      </ul>    
+    {% endblock %}
 
 
-Depois de criar/alterar models, precisamos gerar as migrações (instruções para criar tabelas no banco).
+Usamos a tag de modelo do Django {% for %} para percorrer os posts.
 
-No terminal digite :
 
-    python manage.py makemigrations
 
-No terminal digite :
+### 4. Tags de modelo Django
 
-    python manage.py migrate
+Nos modelos do Django, você pode executar lógica de programação, como executar ifinstruções e forloops.
 
+Essas palavras-chave, ife for, são chamadas de "tags de modelo" no Django.
 
-### 4. Django Admin
+Para executar tags de modelo, nós as colocamos entre {% %}colchetes.
 
-Django Admin é uma ferramenta realmente ótima no Django, na verdade é uma interface de usuário CRUD* de todos os seus modelos!
+Exemplos:
 
-É gratuito e vem pronto para uso com Django:
+    {% if aprovado == 1 %}
+      <h1>Hello</h1>
+    {% else %}
+      <h1>Bye</h1>
+    {% endif %}
 
-1.1 Iniciando com o Django Admin
+As tags de modelo são uma maneira de dizer ao Django que aqui vem algo diferente de HTML simples.
 
-Para entrar na interface do usuário do administrador, inicie o servidor navegando
+As tags de modelo nos permitem fazer alguma programação no servidor antes de enviar o HTML para o cliente.
 
-No terminal digite :
 
-    python manage.py runserver
+*4.1 Tag if*
 
-Na janela do navegador, digite 127.0.0.1:8000/admin/na barra de endereço.
+    {% if verdadeiro == 1 %}
+      <h1>Hello</h1>
+    {% endif %} 
 
-Ao acessar você vera uma tela de login.
+*4.2 Tag elif * 
 
+    {% if perfil == 1 %}
+      <h1>Hello</h1>
+    {% elif perfil == 2 %}
+      <h1>Welcome</h1>
+    {% endif %} 
 
-O motivo pelo qual esta URL leva à página de login do administrador do Django pode ser encontrado no urls.py arquivo do seu projeto:
+*4.3 Tag else*
 
+    {% if aprovado == 1 %}
+      <h1>Aprovado</h1>
+    {% elif aprovado == 2 %}
+      <h1>Reavaliação</h1>
+    {% else %}
+      <h1>Reprovado</h1>
+    {% endif %} 
 
-    from django.contrib import admin
-    from django.urls import path, include
-    
-    urlpatterns = [
-        path('admin/', admin.site.urls),
-        path('blog/', include('blog.urls')),  # rota do app blog
-    ]
 
 
 
-1.2  Criar Usuário no Django Admin 
 
-Para poder efetuar login no aplicativo de administração, precisamos criar um usuário.
+### 5. Operadores
 
-Isso é feito digitando este comando na visualização de comandos:
+Os exemplos acima usam o operador ==, que é usado para verificar se uma variável é igual a um valor, mas há muitos outros operadores que você pode usar, ou você pode até mesmo descartar o operador se quiser apenas verificar se uma variável não está vazia:
 
-terminal digite :
+Exemplos: 
 
-    python manage.py createsuperuser
+    {% if verdadeiro %}
+      <h1>Hello</h1>
+    {% endif %} 
 
-O que dará este prompt:
 
-Aqui você deve digitar:
+*5.1 Operador == , Igual*
 
-    nome de usuário 
-    endereço de e-mail (você pode escolher um endereço de e-mail falso) 
-    senha:
+    {% if verdadeiro == 1 %}
+      <h1>Hello</h1>
+    {% endif %} 
 
-    Username: sandeison
-    Email address: sandeisonfernandes@gmail.com
-    Password: 123456789
-    Password (again): 123456789
-    Esta senha é muito curta. Ela deve conter pelo menos 8 caracteres.
-    Esta senha é muito comum.
-    Esta senha é totalmente numérica.
-    Ignorar a validação de senha e criar usuário mesmo assim? [s/N]:
+*5.2 Operador != , Não é igual a*
 
-Minha senha não atendeu aos critérios, mas este é um ambiente de teste e escolhi criar um usuário mesmo assim, digitando y:
-    
-    Bypass password validation and create user anyway? [y/N]: y
+    {% if verdadeiro != 1 %}
+      <h1>Hello</h1>
+    {% endif %} 
 
-Se você pressionar [Enter], deverá ter criado um usuário com sucesso:
 
-    Superuser created successfully.
+*5.3 Operador < , É menor que*
 
-Agora inicie o servidor novamente:
+    {% if valor < 5 %}
+      <h1>Hello</h1>
+    {% endif %} 
 
-No terminal digite :
+*5.4 Operador <= , É menor ou igual a*
 
-    python manage.py runserver
+    {% if valor <= 5 %}
+      <h1>Hello</h1>
+    {% endif %} 
 
-Na janela do navegador, digite 127.0.0.1:8000/admin/na barra de endereço.
+*5.5 Operador > , É maior que*
 
-Agora é preencha o formulário com o nome de usuário e senha corretos para acessar o sisitema.
+    {% if valor > 5 %}
+      <h1>Hello</h1>
+    {% endif %} 
 
+*5.6 Operador >= ,É maior ou igual a*
 
-1.3  Incluir modelos no Django Admin 
+    {% if valor >= 5 %}
+      <h1>Hello</h1>
+    {% endif %} 
 
-Para incluir o modelo Member na interface de administração, temos que informar ao Django que esse modelo deve estar visível na interface de administração.
+*5.7 Operador e *
 
-Isso é feito em um arquivo chamado admin.pye está localizado na pasta do seu aplicativo, que no nosso caso é a memberspasta .
+Para verificar se mais de uma condição é verdadeira.
 
-Abra-o e ele deverá ficar assim:
+    {% if aprovado == 1 and faltas < 10  %}
+      <h1>Hello</h1>
+    {% endif %} 
 
-    from django.contrib import admin  
-    # Register your models here.
+*5.8 Operador ou *
 
-    admin.site.register(Post)
+Para verificar se uma das condições é verdadeira.
 
+    {% if aprovado == 2 or  media < 7  %}
+      <h1>Reprovado</h1>
+    {% endif %} 
 
 
-### 5. Tipos de dados no Django
+*5.9 Operador e/ou *
 
-*5.1 CharField*
+Combine and e or.
 
-Utilizado para textos curtos, como nomes ou títulos. É necessário definir o atributo max_length para o tamanho máximo. 
+    {% if id_user == 10 and senha == "123456" or idade > 18  %}
+      <h1>Bem vindo</h1>
+    {% endif %} 
 
+*5.10 Operador em *
 
-*5.2 TextField*
+Para verificar se um determinado item está presente em um objeto.
 
-Semelhante ao CharField, mas para armazenar textos longos. 
+    {% if 'Banana' in fruits %}
+      <h1>Hello</h1>
+    {% else %}
+      <h1>Goodbye</h1>
+    {% endif %} 
 
-*5.3 IntegerField*
+*5.11 Operador não em *
 
-Armazena números inteiros, podendo ser usado para validação e como base para campos auto-incrementáveis como o AutoField. 
+Para verificar se um determinado item não está presente em um objeto.
 
-*5.4 DateField*
+    {% if 'Banana' not in fruits %}
+      <h1>Hello</h1>
+    {% else %}
+      <h1>Goodbye</h1>
+    {% endif %} 
 
-Armazena valores de data, convertidos em objetos datetime.date. 
+### 5. Loop for
 
-*5.5 DateTimeField*
+Um forloop é usado para iterar sobre uma sequência, como fazer um loop sobre itens em uma matriz, uma lista ou um dicionário.
 
-Armazena data e hora, convertidas em objetos datetime.datetime. 
-
-*5.6 EmailField*
-
-Para armazenar e validar endereços de e-mail, com max_length padrão de 100. 
-
-*5.7 AutoField*
-
-Um tipo especial de IntegerField que incrementa automaticamente o valor, servindo como identificador único para os registros. 
-
-
-5.8 Exemplo 
-
-from django.db import models
-
-class Pessoa(models.Model):
-
-    # CharField - usado para strings curtas, precisa de max_length
-    nome = models.CharField(max_length=100)
-
-    # TextField - usado para textos longos
-    biografia = models.TextField(blank=True, null=True)
-
-    # IntegerField - números inteiros
-    idade = models.IntegerField()
-
-    # DateField - apenas data (sem hora)
-    data_nascimento = models.DateField()
-
-    # DateTimeField - data e hora
-    criado_em = models.DateTimeField(auto_now_add=True)   # preenchido automaticamente na criação
-    atualizado_em = models.DateTimeField(auto_now=True)   # atualizado sempre que salvar
-
-    # EmailField - valida formato de e-mail automaticamente
-    email = models.EmailField(unique=True)
-
-    # AutoField - chave primária automática (geralmente Django já cria sozinho o "id")
-    codigo = models.AutoField(primary_key=True)
-
-    def __str__(self):
-        return f"{self.nome} ({self.email})"
+    {% for x in fruits %}
+      <h1>{{ x }}</h1>
+    {% endfor %}
