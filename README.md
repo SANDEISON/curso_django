@@ -100,4 +100,5 @@ O View retorna uma resposta renderizada com o Template.
 | Aula 3 - Criação e Estrutura do Projeto em Django | aula_3 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_3) |
 | Aula 4 - Templates no Django                      | aula_4 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_4) |
 | Aula 5 - Models e Banco de Dados no Django (ORM)  | aula_5 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_5) |
+| Aula 6 - Exibindo dados do Models no Template     | aula_6 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_6) |
 
