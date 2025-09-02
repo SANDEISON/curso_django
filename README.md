@@ -1,132 +1,58 @@
 # 📘Curso de Django (Python)
 
-## 🔹 Aula 3 – Criação e Estrutura do Projeto em Django
+## 🔹 Aula 4 – Templates no Django
 
-## 📍 Pré-requisitos
+### 1. Criando a Pasta de Templates
 
-### 1. Instalação do Django
-
-1.1 Com o ambiente virtual ativo, instale o Django:
-- pip install django
-
-1.2 Verifique se foi instalado corretamente:
-- django-admin --version
-
-### 2. Criação do Primeiro Projeto Django
-
-2.1 Crie o projeto inicial:
-- django-admin startproject meu_projeto .
-
-2.2 Estrutura do Projeto:
-
-    meu_projeto/
-    ├── manage.py
-    └── meu_projeto/
-        ├── __init__.py
-        ├── settings.py
-        ├── urls.py
-        ├── asgi.py
-        └── wsgi.py
-
-- **manage.py**
-
-    É um utilitário de linha de comando para interagir com o projeto.
-    
-    Permite rodar comandos do Django:
-
-- **__init__.py**
-  
-  Indica ao Python que esta pasta é um pacote.
-
-  Geralmente fica vazio, mas permite inicializações.
-
-- **settings.py** 
-
-    Arquivo mais importante para configurações.
-    
-    Contém:
-    
-    Configuração do banco de dados.
-    
-    Lista de apps instalados (INSTALLED_APPS).
-    
-    Configuração de idioma e fuso horário.
-    
-    Configurações de templates, middlewares e autenticação.
-
-- **urls.py** 
-
-    Define o roteamento de URLs da aplicação.
-    
-    Quando o usuário acessa uma rota, o Django procura a view correspondente aqui.
-    
-    📍 Exemplo:
-
-    
-        from django.contrib import admin
-        from django.urls import path
-        
-        urlpatterns = [
-            path('admin/', admin.site.urls),
-        ]
-                
-        Aqui temos a rota /admin, que abre o painel administrativo do Django.
-
-- **wsgi.py / asgi.py**
-   
-    WSGI (Web Server Gateway Interface): usado por servidores web tradicionais (Apache, Gunicorn).
-    
-    ASGI (Asynchronous Server Gateway Interface): suporta aplicações assíncronas (WebSockets, tempo real).
-    
-    Normalmente, não alteramos esses arquivos manualmente.
-
-### 3. Rodando o Servidor de Desenvolvimento
-
-3.1 Entre na pasta do projeto e rode o servidor:v
-- python manage.py runserver
-
-3.2 A saída será algo como:
-- Starting development server at http://127.0.0.1:8000/
-
-👉 Abra no navegador: http://127.0.0.1:8000
-
-Você verá a página inicial do Django, confirmando que o ambiente está pronto. 
-
-Para parar o servidor pressione Ctrl + C no terminal.
-
-### 4. Criação e Estrutura de um App no Django
-Além do projeto, o Django organiza funcionalidades em apps.
-
-4.1 Criando um app:
-- python manage.py startapp blog
-
-4.2 Estrutura gerada:
+Dentro do app blog/, crie a pasta templates/ e dentro dela um arquivo home.html:
 
     blog/
-    ├── admin.py
-    ├── apps.py
-    ├── migrations/
-    ├── models.py
-    ├── tests.py
-    └── views.py
+    ├── templates/
+    │   └── home.html
+    ├── views.py
+    ├── urls.py
+    ...
 
-models.py → Define tabelas e relacionamentos (ORM).
+Exemplo home.html
 
-views.py → Funções ou classes que processam requisições.
+    <!DOCTYPE html>
+    <html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <title>Blog - Página Inicial</title>
+    </head>
+    <body>
+        <h1>Bem-vindo ao Blog!</h1>
+        <p>Este é o meu primeiro template no Django 🎉</p>
+    </body>
+    </html>
 
-admin.py → Configuração para aparecer no painel administrativo.
-
-migrations/ → Alterações do banco de dados.
-
-apps.py → Configurações internas do app.
 
 
-4.3 Registrando o App no Projeto
+### 2. Alterando a View para Usar Templates
 
-Após criar o app, precisamos registrá-lo no projeto.
+No arquivo blog/views.py:
 
-No arquivo meu_projeto/settings.py, adicione em INSTALLED_APPS:
+    from django.shortcuts import render
+    
+    def home(request):
+        return render(request, 'home.html')
 
+
+
+### 3. Instalando o Bootstrap 5 no django
+
+3.1 Ative o ambiente virtual:
+
+    venv\Scripts\activate
+
+3.2 Uma vez dentro do ambiente virtual, instale o Bootstrap 5 com este comando:
+
+    pip install django-bootstrap-v5
+
+3.3 Atualizar configurações
+
+O próximo passo é incluir o módulo bootstrap na INSTALLED_APPSlista em settings.py:
 
     INSTALLED_APPS = [
         'django.contrib.admin',
@@ -136,70 +62,104 @@ No arquivo meu_projeto/settings.py, adicione em INSTALLED_APPS:
         'django.contrib.messages',
         'django.contrib.staticfiles',
         'blog',  # app criado
+        'bootstrap5', #Bootstrap 5
     ]
 
-### 5. Criando uma View Simples no App
+3.4 Adicionar Bootstrap 5 ao modelo
 
-No arquivo blog/views.py:
-
-    from django.http import HttpResponse
-    def home(request):
-        return HttpResponse("<h1>Bem-vindo ao Blog!</h1>")
-
-###  6. Configurando URLs do App
-
-5.1 Crie o arquivo blog/urls.py:
-
-    from django.urls import path
-    from . import views
+Dentro da pasta template crie um arquivo HTML base.html
+e adicione o Bootstrap
     
-    urlpatterns = [
-        path('', views.home, name='home'),
-    ]
-
-5.2 Agora, conecte o urls.py do app ao urls.py do projeto.
-
-No arquivo meu_projeto/urls.py:
-
-    from django.contrib import admin
-    from django.urls import path, include
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>{% block title %}{% endblock %}</title>
+      {% load bootstrap5 %}
+      {% bootstrap_css %}
+      {% bootstrap_javascript %}
+    </head>
+    <body>
     
-    urlpatterns = [
-        path('admin/', admin.site.urls),
-        path('blog/', include('blog.urls')),  # rota do app blog
-    ]
+    <div class="container">
+      <ul class="nav bg-info">
+        <li class="nav-item">
+          <a class="nav-link link-light" href="/">HOME</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link link-light" href="/members">MEMBERS</a>
+        </li>
+      </ul>
     
+      {% block content %}
+      {% endblock %}
+    </div>
+    </body>
+    </html>
 
-###  7. Testando no Navegador
+Como você pode ver, inserimos essas três linhas na seção <head> :
 
-7.1 Execute o servidor:
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
 
-    python manage.py runserver
+A primeira linha informa ao Django que ele deve carregar o módulo Bootstrap 5 neste modelo.
 
-7.2 Acesse no navegador:
+A segunda linha insere o
 
-    http://127.0.0.1:8000/blog/
+    <link> 
 
-👉 Você verá a mensagem:
+elemento com a referência à folha de estilo do bootstrap.
 
-  "Bem-vindo ao Blog!"
+A terceira linha insere o 
+
+    <script> 
+
+elemento com a referência ao arquivo javascript necessário.
+
+Pronto! O Bootstrap 5 agora faz parte do seu projeto!
+
+Podemos acessar os modelos do Bootstrap em 
+
+Link : https://getbootstrap.com/
 
 
+3.5 Alterando o home.html
 
-Para finalizar esta aula, como adicionamos do Django no projeto, 
-vamos incluir as dependências no arquivo requirements.txt
+Vamos fazer uma alteração no arquivo home.html
+incluindo os dados do arquivo base.html
+
+    {% extends "base.html" %}
+    
+    
+    {% block content %}
+    
+        <h2>Bem-vindo , inciando com Django</h2>
+    
+    {% endblock %}
+
+
+### 4. Exemplo utilizando o Bootstrap
+
+No arquivo home.html adicione o seguinte código.
+
+
+    {% extends "base.html" %}
+    {% block content %}
+        <div class="container-fluid">
+            <div class="mb-3">
+                <label for="exampleFormControlInput1" class="form-label">Email address</label>
+                <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="name@example.com">
+            </div>
+            <div class="mb-3">
+                <label for="exampleFormControlTextarea1" class="form-label">Example textarea</label>
+                <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+            </div>
+        </div>
+    {% endblock %}
+
+
+Para finalizar esta aula, como adicionamos do Django no projeto, vamos incluir as dependências no arquivo requirements.txt
 
 No terminal digite :
 
     pip freeze > requirements.txt
-
-
-
-
-
-
-
-
-
-
-
