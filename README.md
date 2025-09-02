@@ -154,3 +154,15 @@ Na janela do navegador, digite 127.0.0.1:8000/admin/na barra de endereço.
 Agora é preencha o formulário com o nome de usuário e senha corretos para acessar o sisitema.
 
 
+1.3  Incluir modelos no Django Admin 
+
+Para incluir o modelo Member na interface de administração, temos que informar ao Django que esse modelo deve estar visível na interface de administração.
+
+Isso é feito em um arquivo chamado admin.pye está localizado na pasta do seu aplicativo, que no nosso caso é a memberspasta .
+
+Abra-o e ele deverá ficar assim:
+
+    from django.contrib import admin  
+    # Register your models here.
+
+    admin.site.register(Post)
