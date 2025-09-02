@@ -166,3 +166,68 @@ Abra-o e ele deverá ficar assim:
     # Register your models here.
 
     admin.site.register(Post)
+
+
+
+### 5. Tipos de dados no Django
+
+*5.1 CharField*
+
+Utilizado para textos curtos, como nomes ou títulos. É necessário definir o atributo max_length para o tamanho máximo. 
+
+
+*5.2 TextField*
+
+Semelhante ao CharField, mas para armazenar textos longos. 
+
+*5.3 IntegerField*
+
+Armazena números inteiros, podendo ser usado para validação e como base para campos auto-incrementáveis como o AutoField. 
+
+*5.4 DateField*
+
+Armazena valores de data, convertidos em objetos datetime.date. 
+
+*5.5 DateTimeField*
+
+Armazena data e hora, convertidas em objetos datetime.datetime. 
+
+*5.6 EmailField*
+
+Para armazenar e validar endereços de e-mail, com max_length padrão de 100. 
+
+*5.7 AutoField*
+
+Um tipo especial de IntegerField que incrementa automaticamente o valor, servindo como identificador único para os registros. 
+
+
+5.8 Exemplo 
+
+from django.db import models
+
+class Pessoa(models.Model):
+
+    # CharField - usado para strings curtas, precisa de max_length
+    nome = models.CharField(max_length=100)
+
+    # TextField - usado para textos longos
+    biografia = models.TextField(blank=True, null=True)
+
+    # IntegerField - números inteiros
+    idade = models.IntegerField()
+
+    # DateField - apenas data (sem hora)
+    data_nascimento = models.DateField()
+
+    # DateTimeField - data e hora
+    criado_em = models.DateTimeField(auto_now_add=True)   # preenchido automaticamente na criação
+    atualizado_em = models.DateTimeField(auto_now=True)   # atualizado sempre que salvar
+
+    # EmailField - valida formato de e-mail automaticamente
+    email = models.EmailField(unique=True)
+
+    # AutoField - chave primária automática (geralmente Django já cria sozinho o "id")
+    codigo = models.AutoField(primary_key=True)
+
+    def __str__(self):
+        return f"{self.nome} ({self.email})"
