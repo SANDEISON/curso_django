@@ -1,227 +1,58 @@
 # 📘Curso de Django (Python)
 
-## 🔹 Aula 6 – Exibindo dados do Models no Template
+## 🔹 Aula 7 – Enviando dados do Template para a view
 
-### 1. Variáveis 
+No Django, o fluxo normal é: da view para o template (passando dados pelo contexto).
+Mas também é possível enviar informações do template para a view, geralmente de duas formas:
 
-Em modelos Django, você pode renderizar variáveis
-colocando-as entre {{ }} colchetes:
+### 1. Usando Formulários HTML
 
-Exemplo: 
+Se você tem um <form> no template, pode enviar os dados para a view com POST.
 
-    <h1>Hello {{ firstname }}, how are you?</h1>
+Para este exemplo vamos utilizar três arquivos, tela de login, tela de home e a view login
 
-A variável firstname foi criado na view, vamos ver mais a diante essa implementação.
+1.1 Template login
+    
+    {% extends "base.html" %}
+    {% block content %}
+      <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <input type="text" name="nome" placeholder="Digite seu nome">
+        <input type="password" name="senha" placeholder="Digite sua senha">
+        <button type="submit">Enviar</button>
+      </form>
+    {% endblock %}
 
-
-### 2. Criar variáveis
-
-A variável firstname no exemplo acima foi enviada ao modelo por meio de uma visualização:
-
-    views.py:
-        from django.http import HttpResponse
-        from django.template import loader
-        
-        def testing(request):
-          template = loader.get_template('template.html')
-          context = {
-            'firstname': 'Linus',
-          }
-          return HttpResponse(template.render(context, request))
-
-
-Como você pode ver na visão acima, criamos um objeto chamado context, 
-o preenchemos com dados e o enviamos como o primeiro parâmetro na template.render() da função.
-
-
-
-### 3.Obtendo Dados de um modelo
-
-O exemplo acima mostrou uma abordagem fácil sobre como criar e usar variáveis em um modelo.
-
-Normalmente, a maioria dos dados externos que você deseja usar vem de um modelo.
-
-Na aula 5 criamos um modelo chamado Post.
-Para obter dados do modelo, teremos que importá-los no arquivo views.py e extrair os dados dele na visualização:
-
-    views.py
-    from django.http import HttpResponse, HttpResponseRedirect
-    from django.template import loader
-    from .models import Member
-
-    def testing(request):
-      posts = Post.objects.all().values()
-      template = loader.get_template('home.html')
-      context = {
-        'posts': posts,
-      }
-      return HttpResponse(template.render(context, request))
-
-Agora podemos usar os dados do modelo na pagina home.html:
-
-
-    templates/home.html:
+1.2 Template Home
 
     {% extends "base.html" %}
-    {% block content %}     
+    {% block content %}
       <ul>
         {% for i in posts %}
           <li>{{ i.titulo }}</li>
         {% endfor %}
-      </ul>    
+      </ul>
+    
     {% endblock %}
 
+1.3 Arquivo views
 
-Usamos a tag de modelo do Django {% for %} para percorrer os posts.
-
-
-
-### 4. Tags de modelo Django
-
-Nos modelos do Django, você pode executar lógica de programação, como executar ifinstruções e forloops.
-
-Essas palavras-chave, ife for, são chamadas de "tags de modelo" no Django.
-
-Para executar tags de modelo, nós as colocamos entre {% %}colchetes.
-
-Exemplos:
-
-    {% if aprovado == 1 %}
-      <h1>Hello</h1>
-    {% else %}
-      <h1>Bye</h1>
-    {% endif %}
-
-As tags de modelo são uma maneira de dizer ao Django que aqui vem algo diferente de HTML simples.
-
-As tags de modelo nos permitem fazer alguma programação no servidor antes de enviar o HTML para o cliente.
-
-
-*4.1 Tag if*
-
-    {% if verdadeiro == 1 %}
-      <h1>Hello</h1>
-    {% endif %} 
-
-*4.2 Tag elif * 
-
-    {% if perfil == 1 %}
-      <h1>Hello</h1>
-    {% elif perfil == 2 %}
-      <h1>Welcome</h1>
-    {% endif %} 
-
-*4.3 Tag else*
-
-    {% if aprovado == 1 %}
-      <h1>Aprovado</h1>
-    {% elif aprovado == 2 %}
-      <h1>Reavaliação</h1>
-    {% else %}
-      <h1>Reprovado</h1>
-    {% endif %} 
+    from django.shortcuts import render
+    from blog.models import Post
+    # Create your views here.
+    
+    def login(request):
+        if request.method == "POST":
+            nome = request.POST.get("nome")
+            senha = request.POST.get("senha")
+            posts = Post.objects.all().values()
+            print(nome)
+            print(senha)
+            return render(request, 'home.html', locals())
+    
+        return render(request, 'login.html', locals())
 
 
 
 
 
-### 5. Operadores
-
-Os exemplos acima usam o operador ==, que é usado para verificar se uma variável é igual a um valor, mas há muitos outros operadores que você pode usar, ou você pode até mesmo descartar o operador se quiser apenas verificar se uma variável não está vazia:
-
-Exemplos: 
-
-    {% if verdadeiro %}
-      <h1>Hello</h1>
-    {% endif %} 
-
-
-*5.1 Operador == , Igual*
-
-    {% if verdadeiro == 1 %}
-      <h1>Hello</h1>
-    {% endif %} 
-
-*5.2 Operador != , Não é igual a*
-
-    {% if verdadeiro != 1 %}
-      <h1>Hello</h1>
-    {% endif %} 
-
-
-*5.3 Operador < , É menor que*
-
-    {% if valor < 5 %}
-      <h1>Hello</h1>
-    {% endif %} 
-
-*5.4 Operador <= , É menor ou igual a*
-
-    {% if valor <= 5 %}
-      <h1>Hello</h1>
-    {% endif %} 
-
-*5.5 Operador > , É maior que*
-
-    {% if valor > 5 %}
-      <h1>Hello</h1>
-    {% endif %} 
-
-*5.6 Operador >= ,É maior ou igual a*
-
-    {% if valor >= 5 %}
-      <h1>Hello</h1>
-    {% endif %} 
-
-*5.7 Operador e *
-
-Para verificar se mais de uma condição é verdadeira.
-
-    {% if aprovado == 1 and faltas < 10  %}
-      <h1>Hello</h1>
-    {% endif %} 
-
-*5.8 Operador ou *
-
-Para verificar se uma das condições é verdadeira.
-
-    {% if aprovado == 2 or  media < 7  %}
-      <h1>Reprovado</h1>
-    {% endif %} 
-
-
-*5.9 Operador e/ou *
-
-Combine and e or.
-
-    {% if id_user == 10 and senha == "123456" or idade > 18  %}
-      <h1>Bem vindo</h1>
-    {% endif %} 
-
-*5.10 Operador em *
-
-Para verificar se um determinado item está presente em um objeto.
-
-    {% if 'Banana' in fruits %}
-      <h1>Hello</h1>
-    {% else %}
-      <h1>Goodbye</h1>
-    {% endif %} 
-
-*5.11 Operador não em *
-
-Para verificar se um determinado item não está presente em um objeto.
-
-    {% if 'Banana' not in fruits %}
-      <h1>Hello</h1>
-    {% else %}
-      <h1>Goodbye</h1>
-    {% endif %} 
-
-### 5. Loop for
-
-Um forloop é usado para iterar sobre uma sequência, como fazer um loop sobre itens em uma matriz, uma lista ou um dicionário.
-
-    {% for x in fruits %}
-      <h1>{{ x }}</h1>
-    {% endfor %}
