@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 
 # Create your models here.
@@ -12,6 +13,7 @@ class Post(models.Model):
 
 
 class Pessoa(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name="usuario")
     nome = models.CharField(max_length=255, verbose_name=u'Nome')
     cpf = models.CharField(max_length=15, verbose_name=u'CPF')
     email = models.EmailField(verbose_name=u'Email')

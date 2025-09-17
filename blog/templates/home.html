@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
   <ul>
-    {% for i in posts %}
-      <li>{{ i.titulo }}</li>
+    {% for i in pessoas %}
+      <li> Usuario : {{ i.name_usuario }}</li>
+      <li> Primeiro Nome : {{ i.primeir_nome_usuario }}</li>
+      <li> Email : {{ i.email_usuario }}</li>
+      <br/>
     {% endfor %}
   </ul>
 
