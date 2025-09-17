@@ -53,6 +53,14 @@ Para este exemplo vamos utilizar três arquivos, tela de login, tela de home e a
         return render(request, 'login.html', locals())
 
 
+Obs: Foi adicionado a classe Pessoa no models , para podemos visualizar mais de uma classe no django admin. É necessário atualizar o projeto com os comandos abaixo:
 
+No terminal digite:
+
+    python manage.py makemigrations
+
+No terminal digite :
+
+    python manage.py migrate
 
 
