@@ -1,235 +1,299 @@
 # 📘Curso de Django (Python)
 
-## 🔹 Aula 8 – Relacionamentos no Django
+## 🔹 Aula 9 – Explorando o Painel Administrativo do Django
 
-Em bancos de dados relacionais (como PostgreSQL, MySQL, SQLite), os relacionamentos permitem conectar tabelas entre si.
+O Django Admin é uma interface web automática que o Django fornece para gerenciar os dados do seu projeto. 
 
-No Django, isso se reflete nos Models, que representam tabelas.
+Ele permite:
 
-Assim, quando você quer dizer que:
+Criar, ler, atualizar e deletar registros (CRUD).
 
-Uma Pessoa tem vários Endereços,
+Pesquisar e filtrar dados.
 
-Um Pedido pertence a um Cliente,
+Configurar visualizações customizadas para modelos específicos.
 
-Um Aluno pode estar em várias Turmas,
+Vantagens:
 
-➡️ Você usa os campos de relacionamento que o Django fornece.
+Ganha-se rapidez no desenvolvimento.
 
+Não precisa criar interfaces básicas de administração do zero.
 
-
-### 1. O que é o ORM do Django?
-
-1.1 O que é o ORM do Django?
-
-ORM (Object-Relational Mapper) é uma camada que faz a “ponte” entre o banco de dados relacional (tabelas, colunas, SQL) e o mundo orientado a objetos do Python (classes, atributos, métodos).
-
-No Django, você não precisa escrever SQL puro para manipular o banco de dados.
-Em vez disso, você trabalha com classes (Models) e o ORM traduz automaticamente essas operações em queries SQL.
-
-1.2 Como funciona?
-
-- Você define suas tabelas como models (classes Python).
-
-- O Django converte isso em tabelas no banco.
-
-- Você interage com essas tabelas usando objetos, e o ORM cuida do SQL.
+Totalmente integrado com o ORM do Django.
 
 
-### 2. Tipos de Relacionamentos no Django
 
+### 1. Configuração Inicial do Admin
 
-**2.1 One-to-One (Um para Um)**
+1.1 Certifique-se de que o app está registrado no INSTALLED_APPS:
+       
+     # settings.py
+    INSTALLED_APPS = [
+        'django.contrib.admin',
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        'django.contrib.staticfiles',
+        'accounts',  # nosso app de exemplo
+    ]
 
-Um registro está ligado a exatamente um outro registro.
-
-📌 Exemplo: cada usuário do sistema tem apenas um perfil.
-
-    from django.db import models
-    from django.contrib.auth.models import User
+1.2 Crie um superusuário para acessar o admin:
     
-    class Perfil(models.Model):
-        usuario = models.OneToOneField(User, on_delete=models.CASCADE)
-        data_nascimento = models.DateField()
-        telefone = models.CharField(max_length=20)
+    python manage.py createsuperuser
+
+
+1.3 Execute o servidor:
+
+    python manage.py runserver
+
+1.4 Acesse o admin em http://127.0.0.1:8000/admin/
+
+### 2. Registrando Modelos no Admin
+    
+Para que um modelo apareça no painel administrativo, é necessário registrá-lo.
+
+Exemplo com modelo Pessoa:
+
+    # accounts/models.py
+    from django.db import models
+    
+    class Pessoa(models.Model):
+        nome = models.CharField(max_length=100)
+        email = models.EmailField()
+        idade = models.IntegerField()
     
         def __str__(self):
-            return self.usuario.username
+            return self.nome
+
+Registrar no admin:
+
+    # accounts/admin.py
+    from django.contrib import admin
+    from .models import Pessoa
+    
+    @admin.register(Pessoa)
+    class PessoaAdmin(admin.ModelAdmin):
+        list_display = ('nome', 'email', 'idade')
+        search_fields = ('nome', 'email')
+        list_filter = ('idade',)
+
+Explicações:
+
+list_display → Colunas exibidas na lista do admin.
+
+search_fields → Campos que podem ser pesquisados.
+
+list_filter → Filtros laterais para agilizar consultas.
 
 
 
-**2.2 ForeignKey (Um para Muitos)**
+### 3. Personalizando o Admin
 
-Um registro de uma tabela pode estar ligado a vários registros de outra.
+O Django Admin permite customizações avançadas:
 
-📌 Exemplo: um cliente pode ter vários pedidos.
+3.1 Agrupando campos com fieldsets
 
-    class Cliente(models.Model):
+    @admin.register(Pessoa)
+    class PessoaAdmin(admin.ModelAdmin):
+        fieldsets = (
+            ('Informações Pessoais', {'fields': ('nome', 'rg')}),
+            ('Contato', {'fields': ('telefone',)}),
+        )
+
+3.2 Tornando campos editáveis diretamente na lista
+
+    @admin.register(Pessoa)
+    class PessoaAdmin(admin.ModelAdmin):
+        list_display = ('user', 'cpf', 'data_nascimento')
+        list_editable = ('idade',)
+
+
+3.3 Tornando determinados campos visíveis, mas não editáveis
+
+    @admin.register(Pessoa)
+    class PessoaAdmin(admin.ModelAdmin):
+        list_display = ('nome', 'email', 'idade', 'data_criacao')
+        readonly_fields = ('data_criacao',)
+
+3.4 Exibir e editar objetos relacionados
+
+Inlines são classes auxiliares que permitem exibir e editar objetos relacionados (via ForeignKey ou OneToOneField) dentro do formulário de outro modelo no painel administrativo do Django.
+
+Em outras palavras:
+
+Quando um modelo tem uma relação com outro, você pode mostrar e editar esses objetos filhos dentro da página do objeto pai no admin.
+
+Quando usar
+
+Você usa inlines quando deseja:
+
+Gerenciar dados relacionados sem sair da tela principal.
+
+Evitar múltiplos acessos e formulários separados.
+
+Criar uma experiência mais fluida para o administrador.
+
+Por exemplo:
+
+Uma Pessoa pode ter vários Endereços → editar todos os endereços direto na tela da pessoa.
+
+Um Pedido pode ter vários Itens → editar todos os itens dentro do pedido.
+
+
+Exemplo:
+
+Modelos
+
+    # accounts/models.py
+    from django.db import models
+    
+    class Pessoa(models.Model):
         nome = models.CharField(max_length=100)
         email = models.EmailField()
     
         def __str__(self):
             return self.nome
     
-    class Pedido(models.Model):
-        cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-        data = models.DateTimeField(auto_now_add=True)
-        total = models.DecimalField(max_digits=8, decimal_places=2)
+    class Endereco(models.Model):
+        pessoa = models.ForeignKey(Pessoa, on_delete=models.CASCADE)
+        rua = models.CharField(max_length=100)
+        numero = models.CharField(max_length=10)
+        cidade = models.CharField(max_length=50)
     
         def __str__(self):
-            return f"Pedido {self.id} - {self.cliente.nome}"
+            return f"{self.rua}, {self.numero} - {self.cidade}"
+
+Admin com Inline
+    
+    # accounts/admin.py
+    from django.contrib import admin
+    from .models import Pessoa, Endereco
+    
+    # Define o inline (modelo filho)
+    class EnderecoInline(admin.TabularInline):  # ou admin.StackedInline
+        model = Endereco
+        extra = 1  # número de formulários vazios exibidos
+    
+    # Modelo principal com inline
+    @admin.register(Pessoa)
+    class PessoaAdmin(admin.ModelAdmin):
+        list_display = ('nome', 'email')
+        inlines = [EnderecoInline]
+
+Tipos de Inline
+
+admin.TabularInline
+➜ Exibe os campos em tabela (mais compacto).
+
+admin.StackedInline
+➜ Exibe os campos em blocos verticalizados, como formulários normais.
+
+Exemplo de uso:
+
+    class EnderecoInline(admin.StackedInline):
+        model = Endereco
 
 
 
-- Um Cliente pode ter vários Pedidos.
-- Mas cada Pedido só pode estar ligado a um Cliente.
+Parâmetros Úteis
 
-**2.3 Many-to-Many (Muitos para Muitos)**
+| Parâmetro         | Descrição                                                |
+| ----------------- | -------------------------------------------------------- |
+| `model`           | Modelo relacionado que será exibido no inline            |
+| `extra`           | Quantos formulários vazios aparecem para novos registros |
+| `max_num`         | Número máximo de objetos que podem ser criados           |
+| `readonly_fields` | Campos apenas leitura dentro do inline                   |
+| `can_delete`      | Permite ou bloqueia exclusão de registros no inline      |
 
-Um registro pode estar relacionado a vários outros, e vice-versa.
 
-📌 Exemplo: um aluno pode estar em várias turmas, e uma turma pode ter vários alunos.
+O atributo inlines permite incluir modelos relacionados dentro da interface do admin de um modelo principal, oferecendo edição rápida, integrada e intuitiva dos relacionamentos.
 
-    class Aluno(models.Model):
+
+3.5 Executar operações personalizadas em lote
+
+Quando usar
+
+- Você usa actions quando precisa realizar operações repetitivas ou automatizadas diretamente no admin, como:
+
+- Atualizar o status de vários registros.
+
+- Enviar notificações ou e-mails em massa.
+
+- Excluir, duplicar ou exportar dados.
+
+- Aplicar transformações em campos de vários objetos ao mesmo tempo.
+
+Exemplo prático
+
+Modelo
+
+    # accounts/models.py
+    from django.db import models
+    
+    class Pessoa(models.Model):
         nome = models.CharField(max_length=100)
-    
-        def __str__(self):
-            return self.nome
-    
-    class Turma(models.Model):
-        nome = models.CharField(max_length=50)
-        alunos = models.ManyToManyField(Aluno)
+        email = models.EmailField()
+        idade = models.IntegerField()
     
         def __str__(self):
             return self.nome
 
--   Um Aluno pode estar em várias Turmas.
+Admin com ação personalizada
 
--   Uma Turma pode ter vários Alunos.
-
--   O Django cria uma tabela intermediária automaticamente.
-
-2.4 Como funcionam os relacionamentos na prática?
-
-Você pode acessar os dados de forma fácil com o ORM do Django:
-
-    # Criando Cliente
-    cliente = Cliente.objects.create(nome="João", email="joao@email.com")
+    # accounts/admin.py
+    from django.contrib import admin
+    from .models import Pessoa
     
-    # Criando Pedido
-    pedido1 = Pedido.objects.create(cliente=cliente, total=150.00)
-    pedido2 = Pedido.objects.create(cliente=cliente, total=200.00)
+    @admin.register(Pessoa)
+    class PessoaAdmin(admin.ModelAdmin):
+        list_display = ('nome', 'email', 'idade')
+        actions = ['envelhecer_uma_vez']
     
-    # Acessando pedidos de um cliente
-    pedidos_cliente = cliente.pedido_set.all()   # retorna [pedido1, pedido2]
+        def envelhecer_uma_vez(self, request, queryset):
+            for pessoa in queryset:
+                pessoa.idade += 1
+                pessoa.save()
+            self.message_user(request, "As pessoas selecionadas envelheceram um ano! ")
     
-    # Acessando o cliente de um pedido
-    print(pedido1.cliente.nome)  # João
-
-Resumo:
-
--   OneToOneField → 1:1
-
--   ForeignKey → 1:N
-
--   ManyToManyField → N:N
+        envelhecer_uma_vez.short_description = "Envelhecer pessoas selecionadas"
 
 
-2.4 Exemplo no projeto
+Como funciona no Django Admin
+
+- O administrador acessa a lista de pessoas.
+
+- Marca várias pessoas usando as caixas de seleção.
+
+- No menu suspenso “Ações”, escolhe “Envelhecer pessoas selecionadas”.
+
+- Ao clicar em “Executar”, a ação é aplicada a todos os registros marcados.
 
 
-No modelo Pessoa vamos adicionar o atributo usuário que vai receber o id do usuário do Django.
 
-     class Pessoa(models.Model):
-        usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name="usuario")
-        nome = models.CharField(max_length=255, verbose_name=u'Nome')
-        cpf = models.CharField(max_length=15, verbose_name=u'CPF')
-        email = models.EmailField(verbose_name=u'Email')
-        telefone = models.CharField(max_length=30, verbose_name=u'Telefone')
-        data_nascimento = models.DateField(verbose_name=u'Data de nascimento')
-        rg = models.CharField(max_length=30, verbose_name=u'RG', null=True, blank=True)
-        endereco = models.CharField(max_length=255, verbose_name=u'Endereço residencial', null=True, blank=True)
-        bairro = models.CharField(max_length=100, verbose_name=u'Bairro', null=True, blank=True)
-    
-    
-        def __str__(self):
-            return self.nome
+### 4. Recursos Visuais (Resumo)
 
 
-No arquivo views.py obtemos os dados das pessoas cadastradas, e usuários de cada pessoa.
-
-    from django.contrib.auth.models import User
-    from django.http import HttpResponse
-    from django.shortcuts import render
-    
-    from minhas_financas.models import Pessoa
-    
-    
-    # Create your views here.
-
-    def login(request):
-        if request.method == "POST":
-            nome = request.POST.get("nome")
-            senha = request.POST.get("senha")
-            lista_pessoas = []
-            pessoas = Pessoa.objects.all().values()
-            for i in pessoas:
-                p_json = {}
-                p_json['id'] = i['id']
-                p_json['usuario_id'] = i['usuario_id']
-                p_json['data_nascimento'] = i['data_nascimento']
-                usuario = User.objects.get(id=i['usuario_id'])
-                p_json['name_usuario'] = usuario.username
-                p_json['primeir_nome_usuario'] = usuario.first_name
-                p_json['email_usuario'] = usuario.email
-                lista_pessoas.append(p_json)
-    
-    
-            pessoas = lista_pessoas
-    
-            return render(request, 'minhas_financas/home.html', locals())
-    
-        return render(request, 'login.html', locals())
+| Recurso           | Descrição                           |
+| ----------------- | ----------------------------------- |
+| `list_display`    | Define colunas visíveis na listagem |
+| `search_fields`   | Permite pesquisa rápida             |
+| `list_filter`     | Filtros laterais                    |
+| `list_editable`   | Edição direta de campos             |
+| `readonly_fields` | Campos somente leitura              |
+| `inlines`         | Edição de modelos relacionados      |
+| `actions`         | Cria ações personalizadas           |
+| `fieldsets`       | Agrupa campos no formulário         |
 
 
-No arquivo home.html listamos as Pessoas cadastradas e usuários vinculados.
+### Dicas de Boas Práticas
 
-    {% extends "base.html" %}
-    {% block content %}
-      <ul>
-        {% for i in pessoas %}
-          <li> Usuario : {{ i.name_usuario }}</li>
-          <li> Primeiro Nome : {{ i.primeir_nome_usuario }}</li>
-          <li> Email : {{ i.email_usuario }}</li>
-          <br/>
-        {% endfor %}
-      </ul>
-    
-    {% endblock %}
+Use @admin.register(Modelo) para registrar diretamente.
 
+Sempre defina __str__ nos modelos — isso melhora a visualização.
 
-Obs: Antes de executar o projeto é necessário atualizar o banco de dados
+Limite o número de campos em list_display (para evitar poluição visual).
 
-Como estamos trabalhando com dados fictícios, vamos limpar todos os dados do banco.
-
-
-Acesse a pasta de blog
-
-- Exclua o arquivo db.sqlite3
-
-No terminal digite:
-
-    python manage.py makemigrations
-
-No terminal digite :
-
-    python manage.py migrate
-
-É necessário criar o super usuário novamente.
-
-No terminal digite :
-
-    python manage.py createsuperuser
+Utilize filtros e buscas para facilitar a gestão de grandes volumes de dados.
 
 
 ### Cronograma das Aulas 
@@ -242,5 +306,6 @@ No terminal digite :
 | Aula 4 - Templates no Django                      | aula_4 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_4) |
 | Aula 5 - Models e Banco de Dados no Django (ORM)  | aula_5 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_5) |
 | Aula 6 - Exibindo dados do Models no Template     | aula_6 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_6) |
-| Aula 7 - Enviando dados do Template para a view     | aula_7 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_7) |
-| Aula 8 - Relacionamentos no Django     | aula_8 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_8) |
+| Aula 7 - Enviando dados do Template para a view   | aula_7 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_7) |
+| Aula 8 - Relacionamentos no Django                | aula_8 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_8) |
+| Aula 9 - Explorando o Painel Administrativo do Django                | aula_9 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_9) |
