@@ -1,34 +1,27 @@
 # 📘Curso de Django (Python)
 
-## 🔹 Aula 10 – Views Baseadas em Função (FBV)
+## 🔹 Aula 10 – Views Baseadas em Classe (CBV)
 
-As Function Based Views são formas de construir views no Django utilizando funções Python comuns.
+As Class Based Views são views implementadas como classes Python, o que traz muita organização e reaproveitamento de código. 
 
-Elas recebem um objeto request, fazem algum processamento e retornam uma resposta HTTP (HttpResponse ou render).
+O Django já oferece views genéricas prontas para operações comuns, como listar, criar, atualizar e deletar objetos.
 
-Exemplo de uma função simples:
+Você não precisa reinventar a roda. O Django já deixa a roda balanceada e ainda te entrega o carro junto
 
-    def home(request):
-        return HttpResponse("Olá mundo!")
+##### Vantagens das CBVs
 
-
-Como elas funcionam?
-
-• Qualquer view recebe pelo menos o parâmetro request
-
-• A lógica fica toda dentro da função
-
-• Podem usar condicionais como if request.method == "POST"
-
-• Ideais para quem está começando por serem intuitivas
-
+| Benefício       | Por quê?                                   |
+| --------------- | ------------------------------------------ |
+| Reutilização    | Herdamos comportamentos prontos            |
+| Organização     | Código mais limpo e modular                |
+| Extensibilidade | Fácil adicionar comportamentos específicos |
+| Menos repetição | DRY total (Don't Repeat Yourself)          |
 
 
 
 ### 1. Estrutura do CRUD
 
-Vamos criar um novo projeto para exemplificar um crud.
-
+Vamos utilizar o mesmo projeto para exemplificar um crud com o CBV.
 
 | Ação    | View             | Método   | Template    |
 | ------- | ---------------- | -------- | ----------- |
@@ -42,7 +35,7 @@ Vamos criar um novo projeto para exemplificar um crud.
 
 Abra o terminal e digite :
 
-    django-admin startproject loja
+    django-admin startproject loja .
     cd loja
     python manage.py startapp produtos
 
@@ -82,59 +75,53 @@ Criamos um arquivo: produtos/forms.py
             model = Produto
             fields = ['nome', 'preco', 'descricao']
 
-1.4 Criar as Views (FBV)
+1.4 Views usando CBV
    
-    from django.shortcuts import render, redirect, get_object_or_404
+    from django.urls import reverse_lazy
+    from django.views.generic import ListView, CreateView, UpdateView, DeleteView
     from .models import Produto
     from .forms import ProdutoForm
     
     
-    def produto_list(request):
-        produtos = Produto.objects.all()
-        return render(request, 'produtos/list.html', {'produtos': produtos})
+    class ProdutoListView(ListView):
+        model = Produto
+        template_name = 'produtos/list.html'
+        context_object_name = 'produtos'
     
     
-    def produto_create(request):
-        if request.method == "POST":
-            form = ProdutoForm(request.POST)
-            if form.is_valid():
-                form.save()
-                return redirect('produto_list')
-        else:
-            form = ProdutoForm()
-        return render(request, 'produtos/form.html', {'form': form})
+    class ProdutoCreateView(CreateView):
+        model = Produto
+        form_class = ProdutoForm
+        template_name = 'produtos/form.html'
+        success_url = reverse_lazy('produto_list')
     
     
-    def produto_update(request, pk):
-        produto = get_object_or_404(Produto, pk=pk)
-        if request.method == "POST":
-            form = ProdutoForm(request.POST, instance=produto)
-            if form.is_valid():
-                form.save()
-                return redirect('produto_list')
-        else:
-            form = ProdutoForm(instance=produto)
-        return render(request, 'produtos/form.html', {'form': form})
+    class ProdutoUpdateView(UpdateView):
+        model = Produto
+        form_class = ProdutoForm
+        template_name = 'produtos/form.html'
+        success_url = reverse_lazy('produto_list')
     
     
-    def produto_delete(request, pk):
-        produto = get_object_or_404(Produto, pk=pk)
-        if request.method == "POST":
-            produto.delete()
-            return redirect('produto_list')
-        return render(request, 'produtos/delete.html', {'produto': produto})
-    
+    class ProdutoDeleteView(DeleteView):
+        model = Produto
+        template_name = 'produtos/delete.html'
+        success_url = reverse_lazy('produto_list')
+
 
 1.5 Criar URLs
 
     from django.urls import path
-    from . import views
+    from .views import (
+        ProdutoListView, ProdutoCreateView,
+        ProdutoUpdateView, ProdutoDeleteView
+    )
     
     urlpatterns = [
-        path('', views.produto_list, name='produto_list'),
-        path('novo/', views.produto_create, name='produto_create'),
-        path('editar/<int:pk>/', views.produto_update, name='produto_update'),
-        path('deletar/<int:pk>/', views.produto_delete, name='produto_delete'),
+        path('', ProdutoListView.as_view(), name='produto_list'),
+        path('novo/', ProdutoCreateView.as_view(), name='produto_create'),
+        path('editar/<int:pk>/', ProdutoUpdateView.as_view(), name='produto_update'),
+        path('deletar/<int:pk>/', ProdutoDeleteView.as_view(), name='produto_delete'),
     ]
 
 No arquivo loja/urls.py:
@@ -149,26 +136,43 @@ No arquivo loja/urls.py:
 
 1.6 Templates
 
-Para os tamplates verificar os arquivos na pasta 
+Os mesmos templates usados no FBV funcionam aqui também.
 
+Para os tamplates verificar os arquivos na pasta 
+   
     loja/produtos/templates
 
 
+| Template    | Usado por               |
+| ----------- | ----------------------- |
+| base.html   | Todos                   |
+| list.html   | ListView                |
+| form.html   | CreateView e UpdateView |
+| delete.html | DeleteView              |
 
+1.7 Resumo do CRUD com CBV
+
+| Ação    | View Genérica | O que ela entrega                        |
+| ------- | ------------- | ---------------------------------------- |
+| Listar  | ListView      | Busca os objetos e passa para o template |
+| Criar   | CreateView    | Formulário pronto e validação            |
+| Editar  | UpdateView    | Form preenchido com os dados             |
+| Deletar | DeleteView    | Busca e exclui o objeto com confirmação  |
 
 
 
 ### Cronograma das Aulas 
 
-| Aula	                                             | Branch  |                                                 Clique no Link |
-|:--------------------------------------------------|:-------:|---------------------------------------------------------------:|
-| Aula 1 – O que é Django?                          | aula_1  |              [Link](https://github.com/SANDEISON/curso_django) |
-| Aula 2 - Configuração do Ambiente Django          | aula_2  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_2) |
-| Aula 3 - Criação e Estrutura do Projeto em Django | aula_3  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_3) |
-| Aula 4 - Templates no Django                      | aula_4  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_4) |
-| Aula 5 - Models e Banco de Dados no Django (ORM)  | aula_5  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_5) |
-| Aula 6 - Exibindo dados do Models no Template     | aula_6  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_6) |
-| Aula 7 - Enviando dados do Template para a view   | aula_7  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_7) |
-| Aula 8 - Relacionamentos no Django                | aula_8  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_8) |
-| Aula 9 - Explorando o Painel Administrativo do Django                | aula_9  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_9) |
-| Aula 9 - Views Baseadas em Função (FBV)                | aula_10 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_10) |
+| Aula	                                                 | Branch  |                                                 Clique no Link |
+|:------------------------------------------------------|:-------:|---------------------------------------------------------------:|
+| Aula 1 – O que é Django?                              | aula_1  |              [Link](https://github.com/SANDEISON/curso_django) |
+| Aula 2 - Configuração do Ambiente Django              | aula_2  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_2) |
+| Aula 3 - Criação e Estrutura do Projeto em Django     | aula_3  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_3) |
+| Aula 4 - Templates no Django                          | aula_4  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_4) |
+| Aula 5 - Models e Banco de Dados no Django (ORM)      | aula_5  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_5) |
+| Aula 6 - Exibindo dados do Models no Template         | aula_6  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_6) |
+| Aula 7 - Enviando dados do Template para a view       | aula_7  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_7) |
+| Aula 8 - Relacionamentos no Django                    | aula_8  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_8) |
+| Aula 9 - Explorando o Painel Administrativo do Django | aula_9  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_9) |
+| Aula 10 - Views Baseadas em Função (FBV)              | aula_10 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_10) |
+| Aula 11 - Views Baseadas em Classe (CBV)              | aula_11 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_11) |

@@ -1,40 +1,31 @@
 # Create your views here.
-from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse_lazy
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from .models import Produto
 from .forms import ProdutoForm
 
 
-def produto_list(request):
-    produtos = Produto.objects.all()
-    return render(request, 'produtos/list.html', {'produtos': produtos})
+class ProdutoListView(ListView):
+    model = Produto
+    template_name = 'produtos/list.html'
+    context_object_name = 'produtos'
 
 
-def produto_create(request):
-    if request.method == "POST":
-        form = ProdutoForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('produto_list')
-    else:
-        form = ProdutoForm()
-    return render(request, 'produtos/form.html', {'form': form})
+class ProdutoCreateView(CreateView):
+    model = Produto
+    form_class = ProdutoForm
+    template_name = 'produtos/form.html'
+    success_url = reverse_lazy('produto_list')
 
 
-def produto_update(request, pk):
-    produto = get_object_or_404(Produto, pk=pk)
-    if request.method == "POST":
-        form = ProdutoForm(request.POST, instance=produto)
-        if form.is_valid():
-            form.save()
-            return redirect('produto_list')
-    else:
-        form = ProdutoForm(instance=produto)
-    return render(request, 'produtos/form.html', {'form': form})
+class ProdutoUpdateView(UpdateView):
+    model = Produto
+    form_class = ProdutoForm
+    template_name = 'produtos/form.html'
+    success_url = reverse_lazy('produto_list')
 
 
-def produto_delete(request, pk):
-    produto = get_object_or_404(Produto, pk=pk)
-    if request.method == "POST":
-        produto.delete()
-        return redirect('produto_list')
-    return render(request, 'produtos/delete.html', {'produto': produto})
+class ProdutoDeleteView(DeleteView):
+    model = Produto
+    template_name = 'produtos/delete.html'
+    success_url = reverse_lazy('produto_list')
