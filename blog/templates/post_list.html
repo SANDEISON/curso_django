@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Posts Cadastrados</h1>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Título</th>
+        <th>Data</th>
+        <th>Ações</th>
+    </tr>
+
+    {% for post in posts %}
+    <tr>
+        <td>{{ post.titulo }}</td>
+        <td>{{ post.data_criacao|date:"d/m/Y H:i" }}</td>
+        <td>
+            <a href="{% url 'post_edit' post.pk %}">Editar</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+{% endblock %}

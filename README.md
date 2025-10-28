@@ -3,7 +3,12 @@
 ## 🔹 Aula 7 – Enviando dados do Template para a view
 
 No Django, o fluxo normal é: da view para o template (passando dados pelo contexto).
-Mas também é possível enviar informações do template para a view, geralmente de duas formas:
+Mas também é possível enviar informações do template para a view.
+
+Quando a gente quer pegar o que o usuário digitou em uma página HTML e 
+mandar para o backend no Django, existe um pequeno “caminho” que precisa ser construído. 
+O HTML coleta os dados, o navegador envia esses dados, Django recebe, valida, 
+processa e então faz algo com isso (salvar no banco, por exemplo).
 
 ### 1. Usando Formulários HTML
 
@@ -23,6 +28,15 @@ Para este exemplo vamos utilizar três arquivos, tela de login, tela de home e a
       </form>
     {% endblock %}
 
+
+Nos campos que tenham o atributo name definido. É o name que o Django vai usar para recuperar a informação.
+
+Repare no:
+
+method="POST" para enviar com segurança
+
+{% csrf_token %} para o Django aceitar essa requisição
+
 1.2 Template Home
 
     {% extends "base.html" %}
@@ -35,7 +49,16 @@ Para este exemplo vamos utilizar três arquivos, tela de login, tela de home e a
     
     {% endblock %}
 
-1.3 Arquivo views
+
+1.3 Uma rota (URL) que receba o POST
+
+No arquivo blog/urls.py podemos ver a rota criada
+
+    urlpatterns = [
+        path('', views.login, name='login'),
+    ]
+
+1.4 Arquivo view
 
     from django.shortcuts import render
     from blog.models import Post
@@ -53,16 +76,99 @@ Para este exemplo vamos utilizar três arquivos, tela de login, tela de home e a
         return render(request, 'login.html', locals())
 
 
-Obs: Foi adicionado a classe Pessoa no models , para podemos visualizar mais de uma classe no django admin. É necessário atualizar o projeto com os comandos abaixo:
 
-No terminal digite:
+### 2. Usando Formulários com o ModelForm
+O ModelForm é um tipo de formulário do Django que é criado automaticamente com base em um Model.
 
-    python manage.py makemigrations
+Isso reduz repetição de código, já que o formulário já possui os campos do Model e validações embutidas.
 
-No terminal digite :
+2.1 Criando o ModelForm
 
-    python manage.py migrate
+Dentro da pasta blog criamos um arquivo forms.py
 
+    from django import forms
+    from .models import Post
+    
+    class PostForm(forms.ModelForm):
+        class Meta:
+            model = Post
+            fields = ['titulo', 'conteudo']
+
+2.2 Views: listar e editar Post
+ 
+Dentro do arquivo blog/views.py criamos os metodos de listar e editar
+
+    from django.shortcuts import render, get_object_or_404, redirect
+    from .models import Post
+    from .forms import PostForm
+    
+    def post_list(request):
+        posts = Post.objects.all().order_by('-data_criacao')
+        return render(request, 'blog/post_list.html', {'posts': posts})
+    
+    def post_edit(request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        form = PostForm(request.POST or None, instance=post)
+    
+        if request.method == "POST":
+            if form.is_valid():
+                form.save()
+                return redirect('post_list')
+    
+        return render(request, 'blog/post_edit.html', {'form': form})
+
+2.3 Templates
+
+Criamos dois templates um para listar e outro para editar
+
+Template de Listagem: post_list.html
+
+    <h1>Posts Cadastrados</h1>
+
+    <table border="1" cellpadding="8">
+        <tr>
+            <th>Título</th>
+            <th>Data</th>
+            <th>Ações</th>
+        </tr>
+    
+        {% for post in posts %}
+        <tr>
+            <td>{{ post.titulo }}</td>
+            <td>{{ post.data_criacao|date:"d/m/Y H:i" }}</td>
+            <td>
+                <a href="{% url 'post_edit' post.pk %}">Editar</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+
+
+Template de Edição: post_edit.html
+
+    <h2>Editar Post</h2>
+    
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Salvar</button>
+    </form>
+    
+    <a href="{% url 'post_list' %}">Voltar</a>
+
+
+2.4 Configurando URLs
+
+No arquivo blog/urls.py adicionamos as novas rotas
+
+    from .views import post_edit, post_list
+    
+    urlpatterns = [
+        path('', views.login, name='login'),
+        path('posts/', post_list, name='post_list'),
+        path('posts/<int:pk>/editar/', post_edit, name='post_edit'),
+    ]
 
 ### Cronograma das Aulas 
 

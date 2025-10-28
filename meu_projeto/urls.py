@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
+    path('', include('blog.urls')),  # rota do app blog
     path('admin/', admin.site.urls),
-    path('blog/', include('blog.urls')),  # rota do app blog
+
 ]
