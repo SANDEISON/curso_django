@@ -1,0 +1,17 @@
+{% extends 'produtos/base.html' %}
+
+{% block title %}Cadastro de Produto{% endblock %}
+
+{% block content %}
+<div class="card shadow p-4">
+    <h3 class="mb-4">Formulário do Produto</h3>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a href="{% url 'produto_list' %}" class="btn btn-secondary">Voltar</a>
+    </form>
+</div>
+{% endblock %}

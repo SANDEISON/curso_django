@@ -1,9 +1,0 @@
-{% extends "base.html" %}
-{% block content %}
-      <form method="post" action="{% url 'login' %}">
-        {% csrf_token %}
-        <input type="text" name="nome" placeholder="Digite seu nome">
-        <input type="password" name="senha" placeholder="Digite sua senha">
-        <button type="submit">Enviar</button>
-      </form>
-{% endblock %}
