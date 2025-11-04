@@ -188,6 +188,16 @@ Arquivo: api/serializers.py
 
 Os ViewSets gerenciam automaticamente as operações CRUD.
 
+Suas responsabilidades são:
+
+- Receber os dados da Requisição (formato JSON ou XML)
+- Validar os dados de acordo com as regras definidas na modelagem e no Serializer
+- Desserializar a Requisição e instanciar objetos
+- Processar regras de negócio (aqui é onde implementamos a lógica dos nossos sistemas)
+- Formular uma resposta e responder a quem chamou sua API
+
+
+
 Arquivo: api/views.py
 
     from rest_framework import viewsets
@@ -226,9 +236,6 @@ Arquivo: apiprojeto/urls.py
         path('api/', include('api.urls')),
     ]
     
-
-
-
 digite no terminal:  
 
     python manage.py runserver
@@ -243,8 +250,13 @@ Você verá a interface interativa do Django REST Framework.
 
 
 
+### 9. Resumo 
+O processo de desenvolvimento de aplicações que utilizam o Django Rest Framework geralmente seguem a seguinte linha de implementação:
 
-
+1) Modelagem
+2) Serializers
+3) ViewSets
+4) Routers
 
 
 
