@@ -1,163 +1,252 @@
-# 📘Curso de Django (Python)
+# 📘Curso de Django Rest Framework, ou DRF
 
-## 🔹 Aula 10 – Views Baseadas em Classe (CBV)
-
-As Class Based Views são views implementadas como classes Python, o que traz muita organização e reaproveitamento de código. 
-
-O Django já oferece views genéricas prontas para operações comuns, como listar, criar, atualizar e deletar objetos.
-
-Você não precisa reinventar a roda. O Django já deixa a roda balanceada e ainda te entrega o carro junto
-
-##### Vantagens das CBVs
-
-| Benefício       | Por quê?                                   |
-| --------------- | ------------------------------------------ |
-| Reutilização    | Herdamos comportamentos prontos            |
-| Organização     | Código mais limpo e modular                |
-| Extensibilidade | Fácil adicionar comportamentos específicos |
-| Menos repetição | DRY total (Don't Repeat Yourself)          |
+![img.png](img.png)
 
 
-
-### 1. Estrutura do CRUD
-
-Vamos utilizar o mesmo projeto para exemplificar um crud com o CBV.
-
-| Ação    | View             | Método   | Template    |
-| ------- | ---------------- | -------- | ----------- |
-| Listar  | `produto_list`   | GET      | list.html   |
-| Criar   | `produto_create` | GET/POST | form.html   |
-| Editar  | `produto_update` | GET/POST | form.html   |
-| Deletar | `produto_delete` | GET/POST | delete.html |
+A diferença entre Django e Django REST Framework (DRF) está principalmente no propósito e na forma como cada um trata a comunicação entre o servidor e o cliente.
 
 
-1.1 Criar o projeto e o app
+### 1. Django
 
-Abra o terminal e digite :
+- É um framework web completo em Python para criar aplicações baseadas em páginas HTML.
 
-    django-admin startproject loja .
-    cd loja
-    python manage.py startapp produtos
+- Ele é ideal quando você quer criar sites tradicionais, com páginas renderizadas no servidor (ex.: HTML, templates, formulários, etc).
 
-Ativando o app no settings.py:
+Exemplo:
 
-    INSTALLED_APPS = [
-        ...
-        'produtos',
+    # views.py
+    from django.shortcuts import render
+    from .models import Usuario
+    
+    def listar_usuarios(request):
+        usuarios = Usuario.objects.all()
+        return render(request, 'usuarios.html', {'usuarios': usuarios})
+
+
+
+
+
+### 2. Django REST Framework (DRF)
+
+- É uma extensão do Django voltada para criar APIs RESTful.
+
+- Em vez de enviar HTML, ele envia dados em formato JSON (ou XML), para serem consumidos por aplicações frontend (como React, Vue, Angular) ou apps mobile.
+
+- Ele adiciona ferramentas para serialização, autenticação, autorização, paginação, e versionamento de APIs.
+    
+Exemplo:
+
+Você cria uma view que retorna JSON, não HTML:
+
+
+    # views.py
+    from rest_framework import viewsets
+    from .models import Usuario
+    from .serializers import UsuarioSerializer
+    
+    class UsuarioViewSet(viewsets.ModelViewSet):
+        queryset = Usuario.objects.all()
+        serializer_class = UsuarioSerializer
+
+
+E o serializer transforma o modelo em JSON:
+
+    # serializers.py
+    from rest_framework import serializers
+    from .models import Usuario
+    
+    class UsuarioSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Usuario
+            fields = '__all__'
+
+
+O resultado será algo assim:
+
+    [
+      {"id": 1, "nome": "João", "email": "joao@email.com"},
+      {"id": 2, "nome": "Maria", "email": "maria@email.com"}
     ]
 
-1.2 Criar o Model
-    
-    from django.db import models
 
-    class Produto(models.Model):
-        nome = models.CharField(max_length=100)
-        preco = models.DecimalField(max_digits=6, decimal_places=2)
-        descricao = models.TextField()
+
+
+### 2. Django REST Framework (DRF)
+
+
+| Característica    | **Django**                        | **Django REST Framework (DRF)**        |
+| ----------------- | --------------------------------- | -------------------------------------- |
+| Objetivo          | Criar sites e sistemas web (HTML) | Criar APIs REST (JSON)                 |
+| Retorno principal | Páginas HTML renderizadas         | Dados em JSON                          |
+| Comunicação       | Cliente consome páginas           | Cliente consome dados (front separado) |
+| Uso comum         | Sites, portais, sistemas internos | APIs para apps, SPAs, integrações      |
+| Templates         | Usa Django Templates              | Não usa templates, usa Serializers     |
+| Autenticação      | Session, User padrão do Django    | Token, JWT, OAuth, etc.                |
+
+
+
+
+### 3. O que é uma API REST?
+
+- API (Application Programming Interface) é uma forma de um sistema se comunicar com outro.
+- REST (Representational State Transfer) é um padrão que define como criar APIs usando HTTP.
+
+Princípios REST:
+
+- Stateless: cada requisição é independente.
+
+- Recursos (Resources): são entidades (ex: usuários, produtos).
+
+Métodos HTTP:
+
+- GET: ler dados
+
+- POST: criar dados
+
+- PUT/PATCH: atualizar dados
+
+- DELETE: remover dados
+
+
+
+### 3. Como criar um Projeto Django REST Framework
+
+Passos iniciais:
+
+
+    # Criar e ativar ambiente virtual
+    python -m venv venv
+    venv\Scripts\activate  # (Windows: venv\Scripts\activate)
+    
+    # Instalar Django e DRF
+    pip install django djangorestframework
+    
+    # Criar projeto
+    django-admin startproject apiprojeto .
+    
+    # Criar app
+    python manage.py startapp api
+
+
+
+
+### 4. Configuração inicial
+
+No arquivo settings.py:
+
+    INSTALLED_APPS = [
+        'django.contrib.admin',
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        'django.contrib.staticfiles',
+        'rest_framework',  # DRF
+        'api',             # Nosso app
+    ]
+
+
+### 5.Criando o Modelo (models.py)
+
+Exemplo de modelo de Postagem:
+
+    from django.db import models
+    
+    class Post(models.Model):
+        titulo = models.CharField(max_length=100)
+        conteudo = models.TextField()
+        data_criacao = models.DateTimeField(auto_now_add=True)
     
         def __str__(self):
-            return self.nome
+            return self.titulo
 
-Abra o temrinal e digite : 
-    
+No terminal digite:
+
     python manage.py makemigrations
     python manage.py migrate
 
-1.3 Criar o Formulário
 
-Criamos um arquivo: produtos/forms.py
 
-    from django import forms
-    from .models import Produto
+### 6. Serializers
+
+Os Serializers convertem objetos do Django (modelos) em formatos JSON, e vice-versa.
+
+Arquivo: api/serializers.py
     
-    class ProdutoForm(forms.ModelForm):
+    from rest_framework import serializers
+    from .models import Post
+    
+    class PostSerializer(serializers.ModelSerializer):
         class Meta:
-            model = Produto
-            fields = ['nome', 'preco', 'descricao']
-
-1.4 Views usando CBV
-   
-    from django.urls import reverse_lazy
-    from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-    from .models import Produto
-    from .forms import ProdutoForm
-    
-    
-    class ProdutoListView(ListView):
-        model = Produto
-        template_name = 'produtos/list.html'
-        context_object_name = 'produtos'
-    
-    
-    class ProdutoCreateView(CreateView):
-        model = Produto
-        form_class = ProdutoForm
-        template_name = 'produtos/form.html'
-        success_url = reverse_lazy('produto_list')
-    
-    
-    class ProdutoUpdateView(UpdateView):
-        model = Produto
-        form_class = ProdutoForm
-        template_name = 'produtos/form.html'
-        success_url = reverse_lazy('produto_list')
-    
-    
-    class ProdutoDeleteView(DeleteView):
-        model = Produto
-        template_name = 'produtos/delete.html'
-        success_url = reverse_lazy('produto_list')
+            model = Post
+            fields = '__all__'
 
 
-1.5 Criar URLs
 
-    from django.urls import path
-    from .views import (
-        ProdutoListView, ProdutoCreateView,
-        ProdutoUpdateView, ProdutoDeleteView
-    )
+
+### 7. ViewSets
+
+Os ViewSets gerenciam automaticamente as operações CRUD.
+
+Arquivo: api/views.py
+
+    from rest_framework import viewsets
+    from .models import Post
+    from .serializers import PostSerializer
+    
+    class PostViewSet(viewsets.ModelViewSet):
+        queryset = Post.objects.all()
+        serializer_class = PostSerializer
+
+
+### 8. Endpoints REST com Router
+
+Arquivo: api/urls.py
+
+    from django.urls import path, include
+    from rest_framework.routers import DefaultRouter
+    from .views import PostViewSet
+    
+    router = DefaultRouter()
+    router.register(r'posts', PostViewSet, basename='post')
     
     urlpatterns = [
-        path('', ProdutoListView.as_view(), name='produto_list'),
-        path('novo/', ProdutoCreateView.as_view(), name='produto_create'),
-        path('editar/<int:pk>/', ProdutoUpdateView.as_view(), name='produto_update'),
-        path('deletar/<int:pk>/', ProdutoDeleteView.as_view(), name='produto_delete'),
+        path('', include(router.urls)),
     ]
 
-No arquivo loja/urls.py:
-    
+
+
+Arquivo: apiprojeto/urls.py
+
     from django.contrib import admin
     from django.urls import path, include
     
     urlpatterns = [
         path('admin/', admin.site.urls),
-        path('produtos/', include('produtos.urls')),
+        path('api/', include('api.urls')),
     ]
-
-1.6 Templates
-
-Os mesmos templates usados no FBV funcionam aqui também.
-
-Para os tamplates verificar os arquivos na pasta 
-   
-    loja/produtos/templates
+    
 
 
-| Template    | Usado por               |
-| ----------- | ----------------------- |
-| base.html   | Todos                   |
-| list.html   | ListView                |
-| form.html   | CreateView e UpdateView |
-| delete.html | DeleteView              |
 
-1.7 Resumo do CRUD com CBV
+digite no terminal:  
 
-| Ação    | View Genérica | O que ela entrega                        |
-| ------- | ------------- | ---------------------------------------- |
-| Listar  | ListView      | Busca os objetos e passa para o template |
-| Criar   | CreateView    | Formulário pronto e validação            |
-| Editar  | UpdateView    | Form preenchido com os dados             |
-| Deletar | DeleteView    | Busca e exclui o objeto com confirmação  |
+    python manage.py runserver
+
+
+Agora, acesse no navegador:
+
+http://127.0.0.1:8000/api/posts/
+
+Você verá a interface interativa do Django REST Framework.
+
+
+
+
+
+
+
+
 
 
 
@@ -176,3 +265,4 @@ Para os tamplates verificar os arquivos na pasta
 | Aula 9 - Explorando o Painel Administrativo do Django | aula_9  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_9) |
 | Aula 10 - Views Baseadas em Função (FBV)              | aula_10 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_10) |
 | Aula 11 - Views Baseadas em Classe (CBV)              | aula_11 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_11) |
+| Aula 12 - Django Rest Framework              | aula_12 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_12) |
