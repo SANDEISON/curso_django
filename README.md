@@ -1,6 +1,6 @@
 # 📘Curso de Django (Python)
 
-## 🔹 Aula 10 – Views Baseadas em Classe (CBV)
+## 🔹 Aula 11 – Views Baseadas em Classe (CBV)
 
 As Class Based Views são views implementadas como classes Python, o que traz muita organização e reaproveitamento de código. 
 
