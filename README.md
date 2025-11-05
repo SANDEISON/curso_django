@@ -3,263 +3,274 @@
 ![img.png](img.png)
 
 
-A diferença entre Django e Django REST Framework (DRF) está principalmente no propósito e na forma como cada um trata a comunicação entre o servidor e o cliente.
+### 1. Autenticação por Token e JWT no Django REST Framework
 
+O Django REST Framework (DRF) oferece diferentes formas de autenticação:
 
-### 1. Django
-
-- É um framework web completo em Python para criar aplicações baseadas em páginas HTML.
-
-- Ele é ideal quando você quer criar sites tradicionais, com páginas renderizadas no servidor (ex.: HTML, templates, formulários, etc).
-
-Exemplo:
-
-    # views.py
-    from django.shortcuts import render
-    from .models import Usuario
-    
-    def listar_usuarios(request):
-        usuarios = Usuario.objects.all()
-        return render(request, 'usuarios.html', {'usuarios': usuarios})
+| Tipo      | Armazenamento                          | Expiração                   | Segurança | Recomendado para                 |
+| --------- | -------------------------------------- | --------------------------- | --------- | -------------------------------- |
+| **Token** | Banco de dados                         | Não expira (padrão)         | Média     | APIs simples, testes internos    |
+| **JWT**   | Não armazenado no servidor (stateless) | Sim, expira automaticamente | Alta      | APIs modernas, apps SPA e mobile |
 
 
 
 
+### 2. Autenticação por TOKEN (clássica do DRF)
 
-### 2. Django REST Framework (DRF)
+2.1. Instalação e Configuração
 
-- É uma extensão do Django voltada para criar APIs RESTful.
-
-- Em vez de enviar HTML, ele envia dados em formato JSON (ou XML), para serem consumidos por aplicações frontend (como React, Vue, Angular) ou apps mobile.
-
-- Ele adiciona ferramentas para serialização, autenticação, autorização, paginação, e versionamento de APIs.
-    
-Exemplo:
-
-Você cria uma view que retorna JSON, não HTML:
-
-
-    # views.py
-    from rest_framework import viewsets
-    from .models import Usuario
-    from .serializers import UsuarioSerializer
-    
-    class UsuarioViewSet(viewsets.ModelViewSet):
-        queryset = Usuario.objects.all()
-        serializer_class = UsuarioSerializer
-
-
-E o serializer transforma o modelo em JSON:
-
-    # serializers.py
-    from rest_framework import serializers
-    from .models import Usuario
-    
-    class UsuarioSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = Usuario
-            fields = '__all__'
-
-
-O resultado será algo assim:
-
-    [
-      {"id": 1, "nome": "João", "email": "joao@email.com"},
-      {"id": 2, "nome": "Maria", "email": "maria@email.com"}
-    ]
-
-
-
-
-### 2. Django REST Framework (DRF)
-
-
-| Característica    | **Django**                        | **Django REST Framework (DRF)**        |
-| ----------------- | --------------------------------- | -------------------------------------- |
-| Objetivo          | Criar sites e sistemas web (HTML) | Criar APIs REST (JSON)                 |
-| Retorno principal | Páginas HTML renderizadas         | Dados em JSON                          |
-| Comunicação       | Cliente consome páginas           | Cliente consome dados (front separado) |
-| Uso comum         | Sites, portais, sistemas internos | APIs para apps, SPAs, integrações      |
-| Templates         | Usa Django Templates              | Não usa templates, usa Serializers     |
-| Autenticação      | Session, User padrão do Django    | Token, JWT, OAuth, etc.                |
-
-
-
-
-### 3. O que é uma API REST?
-
-- API (Application Programming Interface) é uma forma de um sistema se comunicar com outro.
-- REST (Representational State Transfer) é um padrão que define como criar APIs usando HTTP.
-
-Princípios REST:
-
-- Stateless: cada requisição é independente.
-
-- Recursos (Resources): são entidades (ex: usuários, produtos).
-
-Métodos HTTP:
-
-- GET: ler dados
-
-- POST: criar dados
-
-- PUT/PATCH: atualizar dados
-
-- DELETE: remover dados
-
-
-
-### 3. Como criar um Projeto Django REST Framework
-
-Passos iniciais:
-
-
-    # Criar e ativar ambiente virtual
-    python -m venv venv
-    venv\Scripts\activate  # (Windows: venv\Scripts\activate)
-    
-    # Instalar Django e DRF
     pip install django djangorestframework
-    
-    # Criar projeto
-    django-admin startproject apiprojeto .
-    
-    # Criar app
-    python manage.py startapp api
+    pip install djangorestframework-authtoken
 
 
-
-
-### 4. Configuração inicial
-
-No arquivo settings.py:
+No settings.py, adicione:
 
     INSTALLED_APPS = [
-        'django.contrib.admin',
-        'django.contrib.auth',
-        'django.contrib.contenttypes',
-        'django.contrib.sessions',
-        'django.contrib.messages',
-        'django.contrib.staticfiles',
-        'rest_framework',  # DRF
-        'api',             # Nosso app
+        'rest_framework',
+        'rest_framework.authtoken',  # 🔹 necessário para TokenAuth
+        'accounts',
     ]
 
 
-### 5.Criando o Modelo (models.py)
+E configure o DRF:
 
-Exemplo de modelo de Postagem:
+    REST_FRAMEWORK = {
+        'DEFAULT_AUTHENTICATION_CLASSES': (
+            'rest_framework.authentication.TokenAuthentication',
+        ),
+        'DEFAULT_PERMISSION_CLASSES': (
+            'rest_framework.permissions.IsAuthenticated',
+        ),
+    }
+
+
+2.2. Criando o modelo e serializer
+
+Arquivo: accounts/models.py
 
     from django.db import models
+    from django.contrib.auth.models import User
     
-    class Post(models.Model):
-        titulo = models.CharField(max_length=100)
-        conteudo = models.TextField()
-        data_criacao = models.DateTimeField(auto_now_add=True)
+    class Profile(models.Model):
+        user = models.OneToOneField(User, on_delete=models.CASCADE)
+        bio = models.TextField(blank=True)
     
         def __str__(self):
-            return self.titulo
-
-No terminal digite:
-
-    python manage.py makemigrations
-    python manage.py migrate
-
-
-
-### 6. Serializers
-
-Os Serializers convertem objetos do Django (modelos) em formatos JSON, e vice-versa.
-
-Arquivo: api/serializers.py
+            return self.user.username
     
+
+Arquivo: accounts/serializers.py
+
     from rest_framework import serializers
-    from .models import Post
+    from django.contrib.auth.models import User
+    from .models import Profile
     
-    class PostSerializer(serializers.ModelSerializer):
+    class UserSerializer(serializers.ModelSerializer):
         class Meta:
-            model = Post
+            model = User
+            fields = ['id', 'username', 'email']
+    
+    class ProfileSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Profile
             fields = '__all__'
 
 
 
+2.3. ViewSets
 
-### 7. ViewSets
+Arquivo: accounts/views.py
 
-Os ViewSets gerenciam automaticamente as operações CRUD.
-
-Suas responsabilidades são:
-
-- Receber os dados da Requisição (formato JSON ou XML)
-- Validar os dados de acordo com as regras definidas na modelagem e no Serializer
-- Desserializar a Requisição e instanciar objetos
-- Processar regras de negócio (aqui é onde implementamos a lógica dos nossos sistemas)
-- Formular uma resposta e responder a quem chamou sua API
-
-
-
-Arquivo: api/views.py
-
-    from rest_framework import viewsets
-    from .models import Post
-    from .serializers import PostSerializer
+    from rest_framework import viewsets, permissions
+    from .models import Profile
+    from .serializers import ProfileSerializer
     
-    class PostViewSet(viewsets.ModelViewSet):
-        queryset = Post.objects.all()
-        serializer_class = PostSerializer
+    class ProfileViewSet(viewsets.ModelViewSet):
+        queryset = Profile.objects.all()
+        serializer_class = ProfileSerializer
+        permission_classes = [permissions.IsAuthenticated]
 
 
-### 8. Endpoints REST com Router
 
-Arquivo: api/urls.py
+
+2.4. URLs e Endpoint de Token
+
+Arquivo: accounts/urls.py
 
     from django.urls import path, include
     from rest_framework.routers import DefaultRouter
-    from .views import PostViewSet
+    from .views import ProfileViewSet
+    from rest_framework.authtoken.views import obtain_auth_token
     
     router = DefaultRouter()
-    router.register(r'posts', PostViewSet, basename='post')
+    router.register(r'profiles', ProfileViewSet)
     
     urlpatterns = [
         path('', include(router.urls)),
+        path('token/', obtain_auth_token, name='api_token_auth'),
     ]
 
-
-
-Arquivo: apiprojeto/urls.py
+Arquivo: user_api/urls.py
 
     from django.contrib import admin
     from django.urls import path, include
     
     urlpatterns = [
         path('admin/', admin.site.urls),
-        path('api/', include('api.urls')),
+        path('api/', include('accounts.urls')),
     ]
+
+
+
+2.5. Como usar
+
+
+Obtenha o token de autenticação:
+
+POST /api/token/
+{
+  "username": "admin",
+  "password": "admin"
+}
+
+
+Resposta:
+
+    {
+      "token": "cd46f14c6a1df5b61b22cf3e4f0..."
+    }
+
+Use o token em cada requisição:
+
+    Authorization: Token cd46f14c6a1df5b61b22cf3e4f0...
+
+🧩 Vantagens:
+
+- Fácil de configurar.
+
+- Ideal para projetos pequenos ou APIs internas.
+
+⚠️ Desvantagens:
+
+- Token fixo (não expira).
+
+- Armazenado no banco de dados (menos escalável).
+
+- Precisa de limpeza manual em revogações.
+
+
+### 3. Autenticação por JWT (JSON Web Token)
+
+3.1. Instalação e Configuração
+
+    pip install djangorestframework-simplejwt
+
+No settings.py:
+
+    INSTALLED_APPS += ['rest_framework']
     
-digite no terminal:  
-
-    python manage.py runserver
-
-
-Agora, acesse no navegador:
-
-http://127.0.0.1:8000/api/posts/
-
-Você verá a interface interativa do Django REST Framework.
+    REST_FRAMEWORK = {
+        'DEFAULT_AUTHENTICATION_CLASSES': (
+            'rest_framework_simplejwt.authentication.JWTAuthentication',
+        ),
+    }
 
 
+3.2. Endpoints JWT
+
+Arquivo: accounts/urls.py
+
+    from django.urls import path, include
+    from rest_framework.routers import DefaultRouter
+    from .views import ProfileViewSet
+    from rest_framework_simplejwt.views import (
+        TokenObtainPairView,
+        TokenRefreshView,
+    )
+    
+    router = DefaultRouter()
+    router.register(r'profiles', ProfileViewSet)
+    
+    urlpatterns = [
+        path('', include(router.urls)),
+        path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+        path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    ]
 
 
-### 9. Resumo 
-O processo de desenvolvimento de aplicações que utilizam o Django Rest Framework geralmente seguem a seguinte linha de implementação:
+3.3. Obter Tokens JWT
 
-1) Modelagem
-2) Serializers
-3) ViewSets
-4) Routers
+Login:
+
+    POST /api/token/
+    {
+      "username": "admin",
+      "password": "admin"
+    }
+
+Resposta:
+
+    {
+      "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+      "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+    }
+
+Usar o token:
+
+    Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+
+Renovar:
+
+    POST /api/token/refresh/
+    {
+      "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+    }
+
+
+### 4. Diferenças Internas (como funciona o JWT)
+
+- O servidor gera o token com base em uma chave secreta (SECRET_KEY).
+
+- Ele não salva nada no banco — tudo está dentro do token (usuário, tempo de expiração etc.).
+
+- O cliente envia o token a cada requisição.
+
+- O servidor valida o token decodificando e verificando a assinatura.
+
+- Quando o token expira, o cliente usa o refresh token para pedir um novo.
+
+
+### 5. Comparativo Técnico
+
+
+| Característica                            | Token Auth (DRF)            | JWT Auth                       |
+| ----------------------------------------- | --------------------------- | ------------------------------ |
+| Armazenamento                             | Banco de dados              | Nenhum (stateless)             |
+| Expiração                                 | Não expira                  | Expira automaticamente         |
+| Validação                                 | Busca o token no banco      | Validação criptográfica        |
+| Performance                               | Mais lenta (consulta no DB) | Mais rápida                    |
+| Revogação manual                          | Fácil (deleta token do DB)  | Difícil (depende de blacklist) |
+| Uso em APIs modernas (React, Vue, Mobile) | Limitado                    | Ideal                          |
+
+
+### 6. Qual usar?
+
+
+| Cenário                                             | Recomendação      |
+| --------------------------------------------------- | ----------------- |
+| API simples, interna, sem frontend separado         | Token tradicional |
+| API pública, SPA, mobile app, microserviços         | JWT (SimpleJWT)   |
+| Precisa revogar tokens facilmente                   | Token tradicional |
+| Precisa escalar horizontalmente (vários servidores) | JWT               |
 
 
 
+
+
+### Conclusão
+
+- TokenAuth: simples, rápido de configurar, mas com limitações.
+- JWTAuth: mais robusto, seguro e escalável — padrão atual em APIs REST.
 
 
 ### Cronograma das Aulas 
@@ -277,4 +288,5 @@ O processo de desenvolvimento de aplicações que utilizam o Django Rest Framewo
 | Aula 9 - Explorando o Painel Administrativo do Django | aula_9  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_9) |
 | Aula 10 - Views Baseadas em Função (FBV)              | aula_10 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_10) |
 | Aula 11 - Views Baseadas em Classe (CBV)              | aula_11 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_11) |
-| Aula 12 - Django Rest Framework              | aula_12 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_12) |
+| Aula 12 - Django Rest Framework                       | aula_12 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_12) |
+| Aula 13 - Django Rest Framework                       | aula_13 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_13) |
