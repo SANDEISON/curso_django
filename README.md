@@ -289,4 +289,4 @@ Renovar:
 | Aula 10 - Views Baseadas em Função (FBV)              | aula_10 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_10) |
 | Aula 11 - Views Baseadas em Classe (CBV)              | aula_11 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_11) |
 | Aula 12 - Django Rest Framework                       | aula_12 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_12) |
-| Aula 13 - Django Rest Framework                       | aula_13 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_13) |
+| Aula 13 - Autenticação por Token e JWT                       | aula_13 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_13) |
