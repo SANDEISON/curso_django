@@ -233,6 +233,8 @@ class Pessoa(models.Model):
         return f"{self.nome} ({self.email})"
 
 
+
+
 ### Cronograma das Aulas 
 
 | Aula	                                                 | Branch  |                                                 Clique no Link |
@@ -248,3 +250,24 @@ class Pessoa(models.Model):
 | Aula 9 - Explorando o Painel Administrativo do Django | aula_9  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_9) |
 | Aula 10 - Views Baseadas em Função (FBV)              | aula_10 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_10) |
 | Aula 11 - Views Baseadas em Classe (CBV)              | aula_11 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_11) |
+| Aula 12 - Django Rest Framework                       | aula_12 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_12) |
+| Aula 13 - Autenticação por Token e JWT                       | aula_13 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_13) |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
