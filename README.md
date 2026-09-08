@@ -1,154 +1,239 @@
-# 📘Curso de Django (Python)
+# 📘 Curso de Django com Python
 
-## 🔹 Aula 2 – Configuração do Ambiente Django
+## 🔹 Aula 2 – Configuração do ambiente de desenvolvimento
+
+Nesta aula, vamos preparar o computador para desenvolver aplicações com Python e Django. Ao final, teremos um ambiente virtual isolado e os arquivos iniciais necessários para controlar as dependências do projeto.
+
+> **Observação:** este guia apresenta os comandos para Windows utilizando PowerShell ou Prompt de Comando (CMD).
+
+## 🎯 Objetivos da aula
+
+Ao final desta aula, você será capaz de:
+
+- instalar e verificar o Python;
+- escolher um editor de código;
+- compreender a função do `pip`;
+- criar, ativar e desativar um ambiente virtual;
+- configurar um arquivo `.gitignore`;
+- criar e utilizar um arquivo `requirements.txt`.
 
 ## 📍 Pré-requisitos
 
-### 1. Instalação do Python
+Antes de começar, é recomendável ter:
 
-Essa instalação é baseada no sisitema operacional windows
+- acesso de administrador para instalar programas;
+- conexão com a internet;
+- conhecimentos básicos sobre arquivos, pastas e terminal;
+- Git instalado, caso acompanhe o curso pelas branches do repositório.
 
-1.1 Acesse ao site oficial:
+## 1. Instalação do Python
 
-Acesse o site [python.org/downloads](https://www.python.org/downloads/) 
+### 1.1 Baixe o instalador
 
-**1.2 Faça o download do instalador:**
+Acesse a [página oficial de downloads do Python](https://www.python.org/downloads/) e baixe o instalador indicado para Windows.
 
-Clique em download na versão mais recente do Python. 
+### 1.2 Execute e configure a instalação
 
-**1.3 Execute o instalador:**
+1. Localize o instalador, normalmente salvo na pasta `Downloads`.
+2. Clique duas vezes no arquivo para executá-lo.
+3. Na primeira tela, marque a opção **Add python.exe to PATH**.
+4. Clique em **Install Now**.
+5. Ao final, clique em **Disable path length limit**, caso essa opção seja exibida.
 
-Localize o arquivo (normalmente na pasta "Downloads") e clique duas vezes nele para iniciar o processo de instalação.
+A opção **Add python.exe to PATH** permite executar o Python diretamente pelo terminal.
 
-**1.4 Configure a instalação:**
+### 1.3 Verifique a instalação
 
-No tela inicial do instalador, é crucial marcar a opção "Add python.exe to PATH". Isto permite que execute comandos Python diretamente no terminal. 
+Abra um novo PowerShell ou Prompt de Comando e execute:
 
-**1.5 Inicie a instalação:**
+```powershell
+python --version
+```
 
-Clique em "Install Now" (ou "Instalar Agora") para começar a instalação com as configurações padrão. 
+Se o comando `python` não for reconhecido, tente utilizar o inicializador do Python para Windows:
 
-**1.6 Conclua a instalação:**
+```powershell
+py --version
+```
 
-Aguarde enquanto o instalador completa a instalação do Python. Na tela final, pode aparecer uma opção para "Disable path length limit", que é recomendado que clique. 
+O terminal deverá apresentar uma versão no formato `Python 3.x.x`.
 
-**1.7 Verifique a instalação:**
+## 2. Escolha do editor de código
 
-Para confirmar se tudo foi instalado corretamente, abra o Prompt de Comando (CMD) ou o PowerShell e digite o comando python --version. 
+Você pode acompanhar o curso utilizando o editor ou a IDE de sua preferência. Duas opções populares são:
 
-**1.8 Confirme o resultado:**
+- [Visual Studio Code](https://code.visualstudio.com/);
+- [PyCharm](https://www.jetbrains.com/pt-br/pycharm/download/?section=windows).
 
-Se a instalação foi bem-sucedida, o terminal irá apresentar a versão do Python que foi instalada, como Python 3.x.x
+Se utilizar o Visual Studio Code, instale também a extensão oficial **Python**, publicada pela Microsoft.
 
-Caso tenha algum problema refaça os passos anteriores. 
+## 3. Criação do ambiente virtual
 
+Um ambiente virtual isola as bibliotecas utilizadas por cada projeto. Isso evita conflitos entre versões instaladas em projetos diferentes.
 
+### 3.1 Abra a pasta do projeto
 
-**Editor de código**
+Crie ou selecione a pasta na qual o projeto será desenvolvido e abra um terminal nessa pasta.
 
-[Visual Studio Code](https://code.visualstudio.com/)
+### 3.2 Crie o ambiente virtual
 
-[PyCharm](https://www.jetbrains.com/pt-br/pycharm/download/?section=windows)
+Execute:
 
-**PIP**
+```powershell
+python -m venv .venv
+```
 
-É um gerenciador de pacotes do Python, já vem junto com as versões recentes do Python.
+Se estiver utilizando o inicializador `py`, execute:
 
-Git (opcional, mas útil para versionamento).
+```powershell
+py -m venv .venv
+```
 
-### 2. Criação de um Ambiente Virtual
+O comando criará a pasta `.venv`, que armazenará uma instalação isolada do Python e as dependências do projeto.
 
-O ambiente virtual serve para isolar as dependências de cada projeto.
+### 3.3 Ative o ambiente virtual
 
-2.1 Abra um editor de código de sua preferencia
+No PowerShell:
 
-2.2 Selecione a pasta onde ira salvar seus projetos
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
 
-2.3 Abra o terminal
+No Prompt de Comando (CMD):
 
-2.4 Crie o ambiente virtual digitando o comando no terminal: 
+```bat
+.venv\Scripts\activate.bat
+```
 
-- python -m venv venv
+Depois da ativação, o terminal deverá exibir `(.venv)` antes do caminho atual:
 
-2.5 Ative o ambiente virtual:
-- venv\Scripts\activate
+```text
+(.venv) PS C:\caminho\do\projeto>
+```
 
-2.6 Confirme que o ambiente está ativo (o terminal exibirá (venv) antes do caminho).
+### 3.4 Se o PowerShell bloquear a ativação
 
-Ex: (venv) PS D:\Sandeison\Documents\
+Caso o PowerShell informe que a execução de scripts foi desabilitada, libere-a apenas para a sessão atual:
 
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+```
 
-### 3. Por que o .gitignore é importante?
+Em seguida, execute novamente:
 
-**Manter repositórios limpos:**
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
 
-Evita que arquivos temporários, logs e outros itens que não são parte do código-fonte se tornem parte do histórico do projeto. 
+A opção `Process` limita a alteração ao terminal aberto. A configuração é descartada quando ele é fechado.
 
-**Evitar vazamento de informações confidenciais:**
+### 3.5 Desative o ambiente virtual
 
-Ajuda a impedir o envio acidental de chaves de API, credenciais e outras informações sensíveis para o repositório. 
+Quando terminar de trabalhar no projeto, execute:
 
-**Simplificar a colaboração:**
+```powershell
+deactivate
+```
 
-Ao manter os commits focados no código relevante, a colaboração entre desenvolvedores se torna mais eficiente e menos suscetível a conflitos por arquivos indesejados. 
+## 4. Gerenciamento de pacotes com `pip`
 
-**Otimizar o controle de versão:**
+O `pip` é o gerenciador de pacotes do Python. Ele permite instalar e atualizar bibliotecas, incluindo o Django.
 
-Reduz o tamanho e o ruído dos repositórios, tornando mais rápida a clonagem, o download e outras operações com o Git. 
+Com o ambiente virtual ativo, verifique se o `pip` está disponível:
 
+```powershell
+python -m pip --version
+```
 
+Utilizar `python -m pip` ajuda a garantir que o pacote seja instalado no ambiente Python atualmente selecionado.
 
-3.1 Gerar arquivos para o git ignore
+> Nesta aula ainda não instalaremos o Django. Essa instalação será realizada na próxima etapa do curso.
 
-Link para gerar uma lista de nomes de arquivos para serem ignorados dependendo da linguagem de programação.
+## 5. Configuração do `.gitignore`
 
-[toptal](https://www.toptal.com/developers/gitignore)
+O `.gitignore` informa ao Git quais arquivos e pastas não devem ser versionados.
 
-3.2 Crie um arquivo .gitignore dentro do repositorio
+Ele é importante para:
 
-- Um exemplo pode ser visto dentro deste repositorio.
+- impedir o versionamento do ambiente virtual e de arquivos temporários;
+- reduzir arquivos desnecessários no repositório;
+- evitar o envio acidental de credenciais e configurações locais;
+- diminuir conflitos entre ambientes de desenvolvimento.
 
+Crie o arquivo `.gitignore` na raiz do projeto. Para este curso, ele deve incluir pelo menos:
 
-### 4. Importancia do arquivo requeriments.txt no django
+```gitignore
+# Ambiente virtual
+.venv/
+venv/
 
-O requirements.txt no Django (e em projetos Python em geral) 
-é fundamental porque lista todas as dependências do projeto e suas versões exatas, 
-garantindo que o ambiente de desenvolvimento e produção possa ser reproduzido com exatidão por 
-qualquer membro da equipe, em qualquer sistema. Isso evita problemas de compatibilidade, 
-como o temido "funciona na minha máquina", facilita a colaboração, a automação de deploys e o 
-controle de versões das bibliotecas.
+# Cache do Python
+__pycache__/
+*.py[cod]
 
-4.1 Criação:
-- Abra o terminal e digite : pip freeze > requirements.txt
+# Variáveis de ambiente e configurações locais
+.env
 
-    Sera gerado um arquivo no seu projeto requirements.txt
+# Editores e IDEs
+.idea/
+.vscode/
 
-4.2 Instalação:
+# Arquivos locais do Django
+db.sqlite3
+*.log
+```
 
-Caso você esteja em outra maquina e baixe o projeto.
+Uma lista mais completa pode ser gerada em [gitignore.io](https://www.toptal.com/developers/gitignore), selecionando os modelos para Python, Django e o editor utilizado.
 
-Primeiro você tem que criar o ambiente virtual, siga o passo 2. Criação de um Ambiente Virtual.
+> O `.gitignore` não remove automaticamente arquivos que já foram adicionados ao histórico do Git.
 
-Depois no termial você digita : 
-- pip install -r requirements.txt
+## 6. Uso do `requirements.txt`
 
-Ate o momento não instalamos nenhuma dependência no projeto, então o arquivo gerado vai estar vazio.
+O arquivo `requirements.txt` registra as bibliotecas necessárias para executar o projeto. Ele ajuda a reproduzir o mesmo ambiente em outro computador.
 
+### 6.1 Registre as dependências instaladas
 
-### Cronograma das Aulas 
+Depois de instalar as bibliotecas do projeto, execute:
 
-| Aula	                                                 | Branch  |                                                 Clique no Link |
-|:------------------------------------------------------|:-------:|---------------------------------------------------------------:|
-| Aula 1 – O que é Django?                              | aula_1  |              [Link](https://github.com/SANDEISON/curso_django) |
-| Aula 2 - Configuração do Ambiente Django              | aula_2  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_2) |
-| Aula 3 - Criação e Estrutura do Projeto em Django     | aula_3  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_3) |
-| Aula 4 - Templates no Django                          | aula_4  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_4) |
-| Aula 5 - Models e Banco de Dados no Django (ORM)      | aula_5  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_5) |
-| Aula 6 - Exibindo dados do Models no Template         | aula_6  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_6) |
-| Aula 7 - Enviando dados do Template para a view       | aula_7  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_7) |
-| Aula 8 - Relacionamentos no Django                    | aula_8  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_8) |
-| Aula 9 - Explorando o Painel Administrativo do Django | aula_9  |  [Link](https://github.com/SANDEISON/curso_django/tree/aula_9) |
-| Aula 10 - Views Baseadas em Função (FBV)              | aula_10 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_10) |
-| Aula 11 - Views Baseadas em Classe (CBV)              | aula_11 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_11) |
-| Aula 12 - Django Rest Framework                       | aula_12 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_12) |
-| Aula 13 - Autenticação por Token e JWT                       | aula_13 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_13) |
+```powershell
+python -m pip freeze > requirements.txt
+```
+
+Neste momento do curso, o arquivo permanecerá vazio porque ainda não instalamos nenhuma dependência no ambiente virtual.
+
+### 6.2 Instale dependências existentes
+
+Ao clonar um projeto que já possui dependências registradas, ative o ambiente virtual e execute:
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+## ✅ Checklist da aula
+
+Antes de avançar, confirme se:
+
+- [ ] o comando `python --version` ou `py --version` exibe a versão instalada;
+- [ ] a pasta `.venv` foi criada;
+- [ ] o terminal exibe `(.venv)` quando o ambiente está ativo;
+- [ ] o comando `python -m pip --version` funciona;
+- [ ] a pasta `.venv` está incluída no `.gitignore`;
+- [ ] o arquivo `requirements.txt` existe na raiz do projeto.
+
+## 🗓️ Cronograma das aulas
+
+| Aula                                                   | Branch  | Acesso                                                        |
+|:-------------------------------------------------------|:-------:|:--------------------------------------------------------------|
+| Aula 1 – O que é Django?                               | aula_1  | [Link](https://github.com/SANDEISON/curso_django/tree/aula_1)  |
+| Aula 2 – Configuração do ambiente Django              | aula_2  | [Link](https://github.com/SANDEISON/curso_django/tree/aula_2)  |
+| Aula 3 – Criação e estrutura do projeto em Django     | aula_3  | [Link](https://github.com/SANDEISON/curso_django/tree/aula_3)  |
+| Aula 4 – Templates no Django                          | aula_4  | [Link](https://github.com/SANDEISON/curso_django/tree/aula_4)  |
+| Aula 5 – Models e banco de dados no Django (ORM)      | aula_5  | [Link](https://github.com/SANDEISON/curso_django/tree/aula_5)  |
+| Aula 6 – Exibindo dados dos models no template        | aula_6  | [Link](https://github.com/SANDEISON/curso_django/tree/aula_6)  |
+| Aula 7 – Enviando dados do template para a view       | aula_7  | [Link](https://github.com/SANDEISON/curso_django/tree/aula_7)  |
+| Aula 8 – Relacionamentos no Django                    | aula_8  | [Link](https://github.com/SANDEISON/curso_django/tree/aula_8)  |
+| Aula 9 – Explorando o painel administrativo do Django | aula_9  | [Link](https://github.com/SANDEISON/curso_django/tree/aula_9)  |
+| Aula 10 – Views baseadas em função (FBV)              | aula_10 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_10) |
+| Aula 11 – Views baseadas em classe (CBV)              | aula_11 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_11) |
+| Aula 12 – Django REST Framework                       | aula_12 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_12) |
+| Aula 13 – Autenticação por Token e JWT                | aula_13 | [Link](https://github.com/SANDEISON/curso_django/tree/aula_13) |
